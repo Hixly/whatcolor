@@ -4,11 +4,10 @@ import { nearestColorName } from '../utils/colorNames'
 import { descriptiveName, contextualReference } from '../utils/colorDescriptions'
 import { getConfusionWarning } from '../utils/confusionPairs'
 
-// EMA alpha=0.5 — 50% new data each sample.
-// At ~15fps this means a real color change is 75% reflected in 2 frames (~0.13s)
-// and 94% reflected in 4 frames (~0.27s). Fast enough to feel live, slow enough
-// to absorb camera sensor noise between frames.
-const EMA_ALPHA = 0.5
+// EMA alpha=0.85 — 85% new data each sample. At 60fps a real color shift is
+// 97.75% reflected within 2 frames (~0.033s). Noise (2-5 RGB units) still
+// dampens; no confirmation gate needed.
+const EMA_ALPHA = 0.85
 
 function sampleCanvas(canvas, cx, cy, size) {
   const ctx = canvas.getContext('2d')
@@ -31,7 +30,6 @@ function sampleCanvas(canvas, cx, cy, size) {
 export function useColorDetection({ videoRef, canvasRef, samplingSize = 3, profile = 'none', active = true }) {
   const [color, setColor] = useState(null)
   const rafRef = useRef(null)
-  const frameCount = useRef(0)
   const smoothRef = useRef(null)
   const pendingName = useRef(null)
   const pendingCount = useRef(0)
@@ -71,55 +69,38 @@ export function useColorDetection({ videoRef, canvasRef, samplingSize = 3, profi
     if (!active) return
 
     function loop() {
-      frameCount.current++
-      // ~15fps: every 4 frames — more responsive than the old every-6
-      if (frameCount.current % 4 === 0) {
-        const video = videoRef.current
-        const canvas = canvasRef.current
-        if (video && canvas && video.readyState >= 2) {
-          const ctx = canvas.getContext('2d')
-          canvas.width = video.videoWidth
-          canvas.height = video.videoHeight
-          ctx.drawImage(video, 0, 0)
+      const video = videoRef.current
+      const canvas = canvasRef.current
+      if (video && canvas && video.readyState >= 2) {
+        const ctx = canvas.getContext('2d')
+        canvas.width = video.videoWidth
+        canvas.height = video.videoHeight
+        ctx.drawImage(video, 0, 0)
 
-          const cx = Math.floor(canvas.width / 2)
-          const cy = Math.floor(canvas.height / 2)
-          const raw = sampleCanvas(canvas, cx, cy, samplingSize)
+        const cx = Math.floor(canvas.width / 2)
+        const cy = Math.floor(canvas.height / 2)
+        const raw = sampleCanvas(canvas, cx, cy, samplingSize)
 
-          // EMA smooth
-          if (!smoothRef.current) {
-            smoothRef.current = raw
-          } else {
-            smoothRef.current = {
-              r: Math.round(EMA_ALPHA * raw.r + (1 - EMA_ALPHA) * smoothRef.current.r),
-              g: Math.round(EMA_ALPHA * raw.g + (1 - EMA_ALPHA) * smoothRef.current.g),
-              b: Math.round(EMA_ALPHA * raw.b + (1 - EMA_ALPHA) * smoothRef.current.b),
-            }
+        // EMA smooth
+        if (!smoothRef.current) {
+          smoothRef.current = raw
+        } else {
+          smoothRef.current = {
+            r: Math.round(EMA_ALPHA * raw.r + (1 - EMA_ALPHA) * smoothRef.current.r),
+            g: Math.round(EMA_ALPHA * raw.g + (1 - EMA_ALPHA) * smoothRef.current.g),
+            b: Math.round(EMA_ALPHA * raw.b + (1 - EMA_ALPHA) * smoothRef.current.b),
           }
+        }
 
-          const { r, g, b } = smoothRef.current
-          const analyzed = analyze(r, g, b)
+        const { r, g, b } = smoothRef.current
+        const analyzed = analyze(r, g, b)
 
-          // Gate on NAME stability, not hex — adjacent hex values map to the
-          // same visual color but can have different names, causing flicker.
-          // Requiring the name to hold for 2 consecutive samples (~0.13s) is
-          // enough to kill noise without adding perceptible lag.
-          if (analyzed.name === pendingName.current) {
-            pendingCount.current++
-          } else {
-            pendingName.current = analyzed.name
-            pendingCount.current = 1
-          }
-
-          if (pendingCount.current >= 2) {
-            const nameChanged = analyzed.name !== confirmedName.current
-            const hexChanged = analyzed.hex !== confirmedHex.current
-            if (nameChanged || hexChanged) {
-              confirmedName.current = analyzed.name
-              confirmedHex.current = analyzed.hex
-              setColor(analyzed)
-            }
-          }
+        // No confirmation gate — EMA at 0.85 damps noise sufficiently.
+        // Update whenever name or hex actually changes.
+        if (analyzed.name !== confirmedName.current || analyzed.hex !== confirmedHex.current) {
+          confirmedName.current = analyzed.name
+          confirmedHex.current = analyzed.hex
+          setColor(analyzed)
         }
       }
       rafRef.current = requestAnimationFrame(loop)
