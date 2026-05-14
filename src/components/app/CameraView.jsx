@@ -4,7 +4,7 @@ import { useSettings } from '../../contexts/SettingsContext'
 import { useCamera } from '../../hooks/useCamera'
 import { useColorDetection } from '../../hooks/useColorDetection'
 import ColorInfoPanel from './ColorInfoPanel'
-import { FlashIcon, PlayIcon, PauseIcon, UploadIcon, CompareIcon, HistoryIcon, SettingsIcon, CameraIcon, XIcon } from '../ui/Icons'
+import { FlashIcon, PlayIcon, PauseIcon, UploadIcon, CompareIcon, HistoryIcon, SettingsIcon, CameraIcon, XIcon, HomeIcon } from '../ui/Icons'
 
 function SmallBtn({ onClick, active, children, label }) {
   return (
@@ -129,12 +129,14 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
         <div className="absolute inset-0 flex flex-col pointer-events-none">
           <div style={{ height: TOP_BAR_H }} />
           <div className="flex-1 flex items-center justify-center">
+            {/* -8px compensates for slight right-bias in the PNG crop */}
             <img
               src="/logo-symbol-white.png"
               alt=""
               width={88}
               height={88}
               className="drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)]"
+              style={{ transform: 'translateX(-8px)' }}
               draggable={false}
             />
           </div>
@@ -173,15 +175,10 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
         <div className="relative flex items-center justify-between h-full px-5 py-5">
           <Link
             to="/"
-            className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center pointer-events-auto"
+            className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center text-white/70 hover:text-white transition-colors pointer-events-auto"
             aria-label="Home"
           >
-            <img
-              src="/logo-symbol-transparent.png"
-              alt=""
-              className="h-5 w-5 object-contain brightness-0 invert"
-              draggable={false}
-            />
+            <HomeIcon size={18} />
           </Link>
           <Link
             to="/settings"

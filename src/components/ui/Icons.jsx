@@ -155,3 +155,10 @@ export const CopyIcon = ({ size = 16, className = '', strokeWidth = 1.8 }) => (
     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
   </svg>
 )
+
+export const HomeIcon = ({ size = 18, className = '', strokeWidth = 1.8 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z" />
+    <path d="M9 21V12h6v9" />
+  </svg>
+)
