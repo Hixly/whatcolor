@@ -1,21 +1,15 @@
 import { Link } from 'react-router-dom'
-import CrosshairReticle from '../app/CrosshairReticle'
 
 export default function Hero() {
   return (
-    <section className="flex flex-col items-center justify-center text-center px-6 pt-20 pb-16 gap-8">
-      {/* Logo */}
-      <div className="flex flex-col items-center gap-5">
-        <CrosshairReticle size={120} lineColor="#111111" />
-        <div>
-          <div className="text-5xl font-bold tracking-tight text-gray-900">
-            <span className="font-normal">What</span><span className="text-brand-red">Color</span>
-          </div>
-          <p className="mt-2 text-xs text-gray-400 tracking-[0.25em] uppercase font-semibold">
-            See More. Know More.
-          </p>
-        </div>
-      </div>
+    <section className="flex flex-col items-center justify-center text-center px-6 pt-16 pb-16 gap-8">
+      {/* Actual logo lockup from design guide */}
+      <img
+        src="/logo-lockup.png"
+        alt="WhatColor — See More. Know More."
+        className="w-64 md:w-72 h-auto select-none"
+        draggable={false}
+      />
 
       {/* Headline */}
       <div className="max-w-xl">
