@@ -132,8 +132,7 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
             <img
               src="/logo-symbol-white.png"
               alt=""
-              height={80}
-              className="drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)] w-auto"
+              className="h-[80px] w-auto drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)]"
               draggable={false}
             />
           </div>
