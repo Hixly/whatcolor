@@ -5,22 +5,24 @@ import Features from './Features'
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-dark-bg">
+    <div className="min-h-screen bg-light-bg">
       <Hero />
       <HowItWorks />
       <Features />
 
       {/* Footer */}
-      <footer className="border-t border-dark-border px-6 py-10">
+      <footer className="border-t border-light-border px-6 py-10">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="text-sm text-gray-600">
-            <span className="text-white font-bold"><span className="font-normal">What</span>Color.io</span>
+          <div className="text-sm text-gray-500">
+            <span className="text-gray-900 font-bold">
+              <span className="font-normal">What</span><span className="text-brand-red">Color</span>.io
+            </span>
             {' '}— See More. Know More.
           </div>
-          <p className="text-xs text-gray-700">Built by a colorblind developer, for colorblind people.</p>
-          <div className="flex gap-5 text-xs text-gray-600">
-            <Link to="/settings" className="hover:text-white transition-colors">Settings</Link>
-            <Link to="/app" className="hover:text-white transition-colors">Open App</Link>
+          <p className="text-xs text-gray-400">Built by a colorblind developer, for colorblind people.</p>
+          <div className="flex gap-5 text-xs text-gray-400">
+            <Link to="/settings" className="hover:text-gray-900 transition-colors">Settings</Link>
+            <Link to="/app" className="hover:text-gray-900 transition-colors">Open App</Link>
           </div>
         </div>
       </footer>

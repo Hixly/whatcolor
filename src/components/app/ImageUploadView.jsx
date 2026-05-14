@@ -134,7 +134,7 @@ export default function ImageUploadView({ onSave, onBack }) {
         className="absolute pointer-events-none"
         style={{ left: `${crosshair.x}%`, top: `${crosshair.y}%`, transform: 'translate(-50%, -50%)' }}
       >
-        <CrosshairReticle size={80} />
+        <CrosshairReticle size={80} lineColor="white" />
       </div>
 
       {/* Top bar */}

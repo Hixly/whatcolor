@@ -30,19 +30,23 @@ function donutSlice(cx, cy, outerR, innerR, startDeg, endDeg) {
   ].join(' ')
 }
 
-const SEGMENTS = 36
+const SEGMENTS = 48
 
-export default function CrosshairReticle({ size = 80, lineColor = 'white' }) {
+export default function CrosshairReticle({ size = 80, lineColor = '#111111' }) {
   const cx = size / 2
   const cy = size / 2
-  const outerR = size * 0.46
-  const innerR = size * 0.29
-  const lineThick = Math.max(1.5, size * 0.025)
-  const dotR = Math.max(2.5, size * 0.055)
+  // Thicker ring matching logo proportions
+  const outerR = size * 0.455
+  const innerR = size * 0.255
+  // Bold lines and dot matching logo
+  const lineThick = Math.max(2, size * 0.065)
+  const dotR = Math.max(3, size * 0.105)
+  // Lines extend slightly past outer ring
+  const lineExtent = size * 0.02
 
   const slices = Array.from({ length: SEGMENTS }, (_, i) => {
     const start = i * (360 / SEGMENTS)
-    const end = start + (360 / SEGMENTS) + 0.5
+    const end = start + (360 / SEGMENTS) + 0.3
     const hue = i * (360 / SEGMENTS)
     return { path: donutSlice(cx, cy, outerR, innerR, start, end), color: hueToHex(hue) }
   })
@@ -52,20 +56,20 @@ export default function CrosshairReticle({ size = 80, lineColor = 'white' }) {
       width={size}
       height={size}
       viewBox={`0 0 ${size} ${size}`}
-      className="drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]"
+      className="drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]"
       aria-label="Color detection crosshair"
       role="img"
     >
-      {/* Crosshair lines — full cross, drawn UNDER the ring */}
-      <line x1={cx} y1={1} x2={cx} y2={size - 1} stroke={lineColor} strokeWidth={lineThick} strokeLinecap="round" />
-      <line x1={1} y1={cy} x2={size - 1} y2={cy} stroke={lineColor} strokeWidth={lineThick} strokeLinecap="round" />
-
-      {/* Rainbow ring */}
+      {/* Rainbow ring — drawn first (bottom layer) */}
       {slices.map((s, i) => (
         <path key={i} d={s.path} fill={s.color} />
       ))}
 
-      {/* Center sampling dot */}
+      {/* Crosshair lines — ON TOP of the ring, dividing it into quadrants */}
+      <line x1={cx} y1={lineExtent} x2={cx} y2={size - lineExtent} stroke={lineColor} strokeWidth={lineThick} strokeLinecap="round" />
+      <line x1={lineExtent} y1={cy} x2={size - lineExtent} y2={cy} stroke={lineColor} strokeWidth={lineThick} strokeLinecap="round" />
+
+      {/* Center sampling dot — topmost */}
       <circle cx={cx} cy={cy} r={dotR} fill={lineColor} />
     </svg>
   )

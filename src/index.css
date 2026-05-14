@@ -5,6 +5,6 @@
 
 @layer base {
   html { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
-  body { @apply bg-dark-bg text-[#F5F5F5]; }
-  :root:not(.dark) body { @apply bg-light-bg text-[#1A1A1A]; }
+  body { @apply bg-light-bg text-[#1A1A1A]; }
+  .dark body { @apply bg-dark-bg text-[#F5F5F5]; }
 }

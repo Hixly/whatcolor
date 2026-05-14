@@ -103,7 +103,7 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
             : { left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }
         }
       >
-        <CrosshairReticle size={80} />
+        <CrosshairReticle size={80} lineColor="white" />
       </div>
 
       {/* Top bar */}

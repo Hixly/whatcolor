@@ -22,16 +22,16 @@ const STEPS = [
 export default function HowItWorks() {
   return (
     <section className="px-6 py-16 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold text-white text-center mb-12">How it works</h2>
+      <h2 className="text-2xl font-bold text-gray-900 text-center mb-12">How it works</h2>
       <div className="grid md:grid-cols-3 gap-6">
         {STEPS.map(({ icon, step, title, desc }) => (
-          <div key={step} className="flex flex-col gap-3 p-6 bg-dark-surface border border-dark-border rounded-2xl">
+          <div key={step} className="flex flex-col gap-3 p-6 bg-white border border-light-border rounded-2xl shadow-sm">
             <div className="flex items-center gap-3">
               <span className="text-3xl">{icon}</span>
-              <span className="text-xs text-gray-600 font-mono">{step}</span>
+              <span className="text-xs text-gray-400 font-mono">{step}</span>
             </div>
-            <h3 className="text-lg font-bold text-white">{title}</h3>
-            <p className="text-gray-400 text-sm leading-relaxed">{desc}</p>
+            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+            <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
           </div>
         ))}
       </div>

@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 
 const DEFAULTS = {
-  theme: 'dark',
+  theme: 'light',
   colorblindProfile: 'none',
   colorFormat: 'hex',
   facingMode: 'environment',
