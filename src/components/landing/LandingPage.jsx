@@ -21,7 +21,7 @@ export default function LandingPage() {
       <footer className="border-t border-gray-100 px-6 py-10 bg-white">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-5">
           <div className="flex items-center gap-3">
-            <img src="/logo-symbol.png" alt="" className="h-7 w-7 object-contain" style={{ mixBlendMode: 'multiply' }} />
+            <img src="/logo-symbol-transparent.png" alt="" className="h-7 w-7 object-contain" />
             <span className="text-sm font-semibold text-gray-900">WhatColor.io</span>
             <span className="text-sm text-gray-400 font-light">— See More. Know More.</span>
           </div>

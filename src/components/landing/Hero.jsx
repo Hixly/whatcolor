@@ -7,10 +7,9 @@ export default function Hero() {
       {/* Logo — mix-blend-mode removes white bg box against pure white page */}
       <div className="animate-scale-in">
         <img
-          src="/logo-lockup.png"
+          src="/logo-lockup-transparent.png"
           alt="WhatColor — See More. Know More."
           className="w-72 md:w-96 h-auto select-none"
-          style={{ mixBlendMode: 'multiply' }}
           draggable={false}
         />
       </div>
