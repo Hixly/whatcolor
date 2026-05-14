@@ -4,7 +4,6 @@ import { useSettings } from '../../contexts/SettingsContext'
 import { useCamera } from '../../hooks/useCamera'
 import { useColorDetection } from '../../hooks/useColorDetection'
 import ColorInfoPanel from './ColorInfoPanel'
-import CrosshairReticle from './CrosshairReticle'
 import { FlashIcon, PlayIcon, PauseIcon, UploadIcon, CompareIcon, HistoryIcon, SettingsIcon, CameraIcon, XIcon, HomeIcon } from '../ui/Icons'
 
 function SmallBtn({ onClick, active, children, label }) {
@@ -130,7 +129,13 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
         <div className="absolute inset-0 flex flex-col pointer-events-none">
           <div style={{ height: TOP_BAR_H }} />
           <div className="flex-1 flex items-center justify-center">
-            <CrosshairReticle size={88} lineColor="white" />
+            <img
+              src="/logo-symbol-white.png"
+              alt=""
+              height={80}
+              className="drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)] w-auto"
+              draggable={false}
+            />
           </div>
           <div style={{ height: BOTTOM_H }} />
         </div>
@@ -146,7 +151,13 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
             transform: 'translate(-50%, -50%)',
           }}
         >
-          <CrosshairReticle size={88} lineColor="white" />
+          <img
+            src="/logo-symbol-white.png"
+            alt=""
+            height={80}
+            className="drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)] w-auto"
+            draggable={false}
+          />
         </div>
       )}
 
