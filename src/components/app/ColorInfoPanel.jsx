@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useSettings } from '../../contexts/SettingsContext'
-import Button from '../ui/Button'
+import { CopyIcon, BookmarkIcon, CheckIcon, WarningIcon } from '../ui/Icons'
 
-function CopyableValue({ label, value }) {
+function CopyableValue({ label, value, dark }) {
   const [copied, setCopied] = useState(false)
   async function copy() {
     await navigator.clipboard.writeText(value)
@@ -12,77 +12,94 @@ function CopyableValue({ label, value }) {
   return (
     <button
       onClick={copy}
-      className="flex items-center gap-2 px-3 py-2 bg-dark-bg rounded-lg hover:bg-[#111] transition-colors text-left group w-full"
+      className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-150 text-left group w-full ${
+        dark
+          ? 'bg-white/5 hover:bg-white/10'
+          : 'bg-gray-100 hover:bg-gray-200'
+      }`}
       title="Tap to copy"
     >
-      <span className="text-xs text-gray-500 uppercase tracking-widest w-8 shrink-0">{label}</span>
-      <span className="font-mono text-sm text-gray-200 group-hover:text-white transition-colors truncate">{value}</span>
-      <span className="ml-auto text-xs text-gray-600 group-hover:text-gray-400 transition-colors shrink-0">
-        {copied ? '✓ copied' : 'copy'}
+      <span className={`text-[10px] font-bold uppercase tracking-widest w-8 shrink-0 ${dark ? 'text-white/30' : 'text-gray-400'}`}>
+        {label}
+      </span>
+      <span className={`font-mono text-sm truncate flex-1 ${dark ? 'text-white/80' : 'text-gray-800'}`}>{value}</span>
+      <span className={`shrink-0 transition-all duration-150 ${copied ? 'text-brand-green' : dark ? 'text-white/20 group-hover:text-white/40' : 'text-gray-300 group-hover:text-gray-500'}`}>
+        {copied ? <CheckIcon size={13} strokeWidth={2.5} /> : <CopyIcon size={13} />}
       </span>
     </button>
   )
 }
 
-export default function ColorInfoPanel({ color, onSave, className = '' }) {
+export default function ColorInfoPanel({ color, onSave, dark = false, className = '' }) {
   const { settings } = useSettings()
+  const [saved, setSaved] = useState(false)
 
   if (!color) {
     return (
-      <div className={`flex items-center justify-center h-32 text-gray-600 text-sm ${className}`}>
-        Aim the crosshair at any color to begin
+      <div className={`flex items-center justify-center h-28 text-sm font-light ${dark ? 'text-white/30' : 'text-gray-400'} ${className}`}>
+        Aim the crosshair at any color
       </div>
     )
   }
 
   const swatchStyle = { backgroundColor: color.hex }
-
-  const formats = {
-    hex: <CopyableValue label="HEX" value={color.hex} />,
-    rgb: <CopyableValue label="RGB" value={color.rgb} />,
-    hsl: <CopyableValue label="HSL" value={color.hsl} />,
-  }
-
   const primaryFormat = settings.colorFormat || 'hex'
   const otherFormats = ['hex', 'rgb', 'hsl'].filter(f => f !== primaryFormat)
+  const formatValues = { hex: color.hex, rgb: color.rgb, hsl: color.hsl }
+
+  function handleSave() {
+    onSave?.(color)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 1500)
+  }
 
   return (
     <div className={`flex flex-col gap-4 ${className}`}>
       {/* Swatch + name */}
       <div className="flex items-center gap-4">
         <div
-          className="w-16 h-16 rounded-2xl shrink-0 shadow-lg border border-white/10"
+          className="w-14 h-14 rounded-2xl shrink-0 shadow-lg"
           style={swatchStyle}
-          aria-label={`Color swatch: ${color.hex}`}
+          aria-label={`Color: ${color.hex}`}
         />
-        <div className="min-w-0">
-          <p className="text-xl font-bold text-white leading-tight truncate">{color.name}</p>
-          <p className="text-sm text-gray-400 mt-0.5 truncate">{color.descriptive}</p>
+        <div className="min-w-0 flex-1">
+          <p className={`text-lg font-bold leading-tight truncate ${dark ? 'text-white' : 'text-gray-900'}`}>{color.name}</p>
+          <p className={`text-sm mt-0.5 truncate font-light ${dark ? 'text-white/50' : 'text-gray-500'}`}>{color.descriptive}</p>
           {color.reference && (
-            <p className="text-xs text-gray-500 mt-0.5 truncate">{color.reference}</p>
+            <p className={`text-xs mt-0.5 truncate ${dark ? 'text-white/30' : 'text-gray-400'}`}>{color.reference}</p>
           )}
         </div>
       </div>
 
-      {/* Color values — primary format first, then others */}
+      {/* Color values */}
       <div className="flex flex-col gap-1">
-        {formats[primaryFormat]}
-        {otherFormats.map(f => formats[f])}
+        <CopyableValue label={primaryFormat.toUpperCase()} value={formatValues[primaryFormat]} dark={dark} />
+        {otherFormats.map(f => (
+          <CopyableValue key={f} label={f.toUpperCase()} value={formatValues[f]} dark={dark} />
+        ))}
       </div>
 
       {/* Confusion warning */}
       {color.confusion && (
-        <div className="flex items-start gap-2 px-3 py-2.5 bg-yellow-950/40 border border-yellow-800/40 rounded-xl text-sm text-yellow-300">
-          <span className="shrink-0 mt-0.5">⚠️</span>
-          <span>{color.confusion}</span>
+        <div className={`flex items-start gap-2 px-3 py-2.5 rounded-2xl text-sm ${dark ? 'bg-yellow-500/10 border border-yellow-500/20 text-yellow-300' : 'bg-amber-50 border border-amber-200 text-amber-700'}`}>
+          <WarningIcon size={15} className="shrink-0 mt-0.5" />
+          <span className="font-light text-xs leading-relaxed">{color.confusion}</span>
         </div>
       )}
 
       {/* Save button */}
       {onSave && (
-        <Button variant="secondary" size="sm" onClick={() => onSave(color)} className="w-full">
-          🔖 Save to History
-        </Button>
+        <button
+          onClick={handleSave}
+          className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 active:scale-[0.97] ${
+            saved
+              ? dark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-700'
+              : dark ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+          }`}
+        >
+          {saved ? <CheckIcon size={15} strokeWidth={2.5} /> : <BookmarkIcon size={15} />}
+          {saved ? 'Saved' : 'Save to History'}
+        </button>
       )}
     </div>
   )

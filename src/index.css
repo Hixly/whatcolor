@@ -1,10 +1,21 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  html { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+  html { font-family: 'Outfit', system-ui, sans-serif; }
   body { @apply bg-light-bg text-[#1A1A1A]; }
-  .dark body { @apply bg-dark-bg text-[#F5F5F5]; }
+  .dark body { @apply bg-dark-bg text-[#F0F0F0]; }
+}
+
+@layer utilities {
+  .delay-100 { animation-delay: 100ms; }
+  .delay-150 { animation-delay: 150ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+  .delay-600 { animation-delay: 600ms; }
+  .delay-700 { animation-delay: 700ms; }
 }

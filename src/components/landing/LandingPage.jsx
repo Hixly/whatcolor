@@ -5,22 +5,28 @@ import Features from './Features'
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-light-bg">
+    <div className="min-h-screen bg-white">
       <Hero />
+
+      {/* Divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mx-8" />
+
       <HowItWorks />
+
+      <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mx-8" />
+
       <Features />
 
       {/* Footer */}
-      <footer className="border-t border-light-border px-6 py-10">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <img src="/logo-symbol.png" alt="WhatColor logo" className="h-6 w-6 object-contain" />
-            <span className="text-sm text-gray-500">
-              <span className="font-bold text-gray-900">WhatColor.io</span> — See More. Know More.
-            </span>
+      <footer className="border-t border-gray-100 px-6 py-10 bg-white">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-5">
+          <div className="flex items-center gap-3">
+            <img src="/logo-symbol.png" alt="" className="h-7 w-7 object-contain" style={{ mixBlendMode: 'multiply' }} />
+            <span className="text-sm font-semibold text-gray-900">WhatColor.io</span>
+            <span className="text-sm text-gray-400 font-light">— See More. Know More.</span>
           </div>
-          <p className="text-xs text-gray-400">Built by a colorblind developer, for colorblind people.</p>
-          <div className="flex gap-5 text-xs text-gray-400">
+          <p className="text-xs text-gray-400 font-light">Built by a colorblind developer, for colorblind people.</p>
+          <div className="flex gap-6 text-sm text-gray-400 font-medium">
             <Link to="/settings" className="hover:text-gray-900 transition-colors">Settings</Link>
             <Link to="/app" className="hover:text-gray-900 transition-colors">Open App</Link>
           </div>

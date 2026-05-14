@@ -5,27 +5,57 @@ import { useCamera } from '../../hooks/useCamera'
 import { useColorDetection } from '../../hooks/useColorDetection'
 import CrosshairReticle from './CrosshairReticle'
 import ColorInfoPanel from './ColorInfoPanel'
-import Button from '../ui/Button'
+import { FlashIcon, PlayIcon, PauseIcon, UploadIcon, CompareIcon, HistoryIcon, SettingsIcon, CameraIcon } from '../ui/Icons'
+
+function IconBtn({ onClick, active, children, label, className = '' }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 ${
+        active
+          ? 'bg-white/25 text-white'
+          : 'bg-black/30 text-white/80 hover:bg-black/50 hover:text-white'
+      } ${className}`}
+    >
+      {children}
+    </button>
+  )
+}
 
 function PermissionDenied() {
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
-      <div className="text-5xl">🚫</div>
-      <h2 className="text-xl font-bold text-white">Camera access denied</h2>
-      <p className="text-gray-400 max-w-sm text-sm">
-        WhatColor needs camera access to identify colors. Open your browser settings and allow camera access for this site, then refresh the page.
-      </p>
+    <div className="flex flex-col items-center justify-center h-full gap-5 p-8 text-center">
+      <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center">
+        <CameraIcon size={28} className="text-white/60" />
+      </div>
+      <div>
+        <h2 className="text-xl font-bold text-white mb-2">Camera access denied</h2>
+        <p className="text-white/50 max-w-sm text-sm font-light leading-relaxed">
+          WhatColor needs camera access to identify colors. Open your browser settings and allow access for this site, then refresh.
+        </p>
+      </div>
     </div>
   )
 }
 
 function CameraUnavailable({ onSwitchToUpload }) {
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
-      <div className="text-5xl">📷</div>
-      <h2 className="text-xl font-bold text-white">No camera detected</h2>
-      <p className="text-gray-400 max-w-sm text-sm">This device doesn't have a camera, or camera access is unavailable.</p>
-      <Button onClick={onSwitchToUpload}>Upload an Image Instead</Button>
+    <div className="flex flex-col items-center justify-center h-full gap-5 p-8 text-center">
+      <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center">
+        <CameraIcon size={28} className="text-white/60" />
+      </div>
+      <div>
+        <h2 className="text-xl font-bold text-white mb-2">No camera detected</h2>
+        <p className="text-white/50 max-w-sm text-sm font-light">This device doesn't have a camera, or access is unavailable.</p>
+      </div>
+      <button
+        onClick={onSwitchToUpload}
+        className="flex items-center gap-2 px-6 py-3 bg-white text-black font-semibold rounded-full text-sm hover:bg-gray-100 transition-all"
+      >
+        <UploadIcon size={16} /> Upload an Image
+      </button>
     </div>
   )
 }
@@ -44,15 +74,8 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
     active: !paused && status === 'active',
   })
 
-  useEffect(() => {
-    start()
-    return stop
-  }, [start, stop])
-
-  // Notify parent when color changes
-  useEffect(() => {
-    if (color && onColorChange) onColorChange(color)
-  }, [color, onColorChange])
+  useEffect(() => { start(); return stop }, [start, stop])
+  useEffect(() => { if (color && onColorChange) onColorChange(color) }, [color, onColorChange])
 
   function handleTapOnPaused(e) {
     if (!paused) return
@@ -61,10 +84,8 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
     const rect = e.currentTarget.getBoundingClientRect()
     const xRatio = (e.clientX - rect.left) / rect.width
     const yRatio = (e.clientY - rect.top) / rect.height
-    const x = Math.round(xRatio * canvas.width)
-    const y = Math.round(yRatio * canvas.height)
     setTapPoint({ xPct: xRatio * 100, yPct: yRatio * 100 })
-    samplePoint(x, y)
+    samplePoint(Math.round(xRatio * canvas.width), Math.round(yRatio * canvas.height))
   }
 
   if (status === 'denied') return <PermissionDenied />
@@ -72,31 +93,17 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
 
   return (
     <div className="relative w-full h-full bg-black overflow-hidden">
-      {/* Video feed */}
-      <video
-        ref={videoRef}
-        className="absolute inset-0 w-full h-full object-cover"
-        playsInline
-        muted
-        aria-label="Camera feed"
-      />
-
-      {/* Hidden canvas for pixel sampling */}
+      <video ref={videoRef} className="absolute inset-0 w-full h-full object-cover" playsInline muted aria-label="Camera feed" />
       <canvas ref={canvasRef} className="hidden" />
 
-      {/* Tap overlay when paused — clicking moves crosshair and samples that pixel */}
       {paused && (
-        <div
-          className="absolute inset-0 cursor-crosshair"
-          onClick={handleTapOnPaused}
-          role="button"
-          aria-label="Tap to sample color at this point"
-        />
+        <div className="absolute inset-0 cursor-crosshair" onClick={handleTapOnPaused}
+          role="button" aria-label="Tap to sample color at this point" />
       )}
 
-      {/* Crosshair — centered normally, moves to tap point when paused */}
+      {/* Crosshair */}
       <div
-        className="absolute pointer-events-none"
+        className="absolute pointer-events-none transition-all duration-150"
         style={
           paused && tapPoint
             ? { left: `${tapPoint.xPct}%`, top: `${tapPoint.yPct}%`, transform: 'translate(-50%, -50%)' }
@@ -107,74 +114,51 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
       </div>
 
       {/* Top bar */}
-      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-black/60 to-transparent">
-        <Link to="/" className="font-bold text-white text-sm tracking-tight">
-          <span className="font-normal">What</span>Color
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 pt-safe py-3 bg-gradient-to-b from-black/70 via-black/20 to-transparent">
+        <Link to="/">
+          <img src="/logo-symbol.png" alt="WhatColor" className="h-7 w-7 object-contain brightness-0 invert" />
         </Link>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={toggleTorch}
-            className={`p-2.5 rounded-xl text-lg transition-colors ${torchOn ? 'bg-yellow-500/30 text-yellow-300' : 'bg-black/40 text-white hover:bg-black/60'}`}
-            aria-label="Toggle flashlight"
-            title="Toggle flashlight"
-          >
-            🔦
-          </button>
-          <button
-            onClick={() => { setPaused(v => !v); setTapPoint(null) }}
-            className={`p-2.5 rounded-xl text-lg transition-colors ${paused ? 'bg-white/20 text-white' : 'bg-black/40 text-white hover:bg-black/60'}`}
-            aria-label={paused ? 'Resume camera' : 'Pause camera'}
-            title={paused ? 'Resume' : 'Pause & tap to sample'}
-          >
-            {paused ? '▶️' : '⏸️'}
-          </button>
-          <button
-            onClick={onSwitchToUpload}
-            className="p-2.5 rounded-xl text-lg bg-black/40 text-white hover:bg-black/60 transition-colors"
-            aria-label="Upload image"
-            title="Upload image"
-          >
-            📁
-          </button>
-          <button
-            onClick={onSwitchToCompare}
-            className="p-2.5 rounded-xl text-lg bg-black/40 text-white hover:bg-black/60 transition-colors"
-            aria-label="Compare colors"
-            title="Compare colors"
-          >
-            ⚖️
-          </button>
-          <button
-            onClick={onSwitchToHistory}
-            className="p-2.5 rounded-xl text-lg bg-black/40 text-white hover:bg-black/60 transition-colors"
-            aria-label="Color history"
-            title="Color history"
-          >
-            🕐
-          </button>
+        <div className="flex items-center gap-1.5">
+          <IconBtn onClick={toggleTorch} active={torchOn} label="Toggle flashlight">
+            <FlashIcon size={16} />
+          </IconBtn>
+          <IconBtn onClick={() => { setPaused(v => !v); setTapPoint(null) }} active={paused} label={paused ? 'Resume' : 'Pause & tap to sample'}>
+            {paused ? <PlayIcon size={16} /> : <PauseIcon size={16} />}
+          </IconBtn>
+          <IconBtn onClick={onSwitchToUpload} label="Upload image">
+            <UploadIcon size={16} />
+          </IconBtn>
+          <IconBtn onClick={onSwitchToCompare} label="Compare colors">
+            <CompareIcon size={16} />
+          </IconBtn>
+          <IconBtn onClick={onSwitchToHistory} label="Color history">
+            <HistoryIcon size={16} />
+          </IconBtn>
           <Link
             to="/settings"
-            className="p-2.5 rounded-xl text-lg bg-black/40 text-white hover:bg-black/60 transition-colors"
+            className="w-9 h-9 rounded-full flex items-center justify-center bg-black/30 text-white/80 hover:bg-black/50 hover:text-white transition-all duration-200"
             aria-label="Settings"
           >
-            ⚙️
+            <SettingsIcon size={16} />
           </Link>
         </div>
       </div>
 
-      {/* Mobile bottom color info panel — hidden on lg+ (desktop uses sidebar) */}
+      {/* Mobile bottom panel */}
       <div className="absolute bottom-0 left-0 right-0 lg:hidden">
-        <div className="mx-3 mb-3 bg-dark-surface/95 backdrop-blur-md rounded-2xl p-4 border border-dark-border">
-          <ColorInfoPanel color={color} onSave={onSave} />
+        <div className="mx-3 mb-3 bg-[#111]/90 backdrop-blur-xl rounded-3xl p-4 border border-white/10">
+          <ColorInfoPanel color={color} onSave={onSave} dark />
         </div>
       </div>
 
-      {/* Camera requesting state */}
+      {/* Camera requesting */}
       {status === 'requesting' && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/60">
-          <div className="text-white text-center">
-            <div className="text-4xl mb-3 animate-pulse">📷</div>
-            <p className="text-sm text-gray-300">Requesting camera access…</p>
+        <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center animate-pulse">
+              <CameraIcon size={24} className="text-white" />
+            </div>
+            <p className="text-sm text-white/60 font-light">Requesting camera access…</p>
           </div>
         </div>
       )}

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Button from '../ui/Button'
+import { ArrowLeftIcon, DownloadIcon, PaletteIcon, XIcon, CheckIcon } from '../ui/Icons'
 
 function HistoryEntry({ entry, onRemove, onLabelChange }) {
   const [editing, setEditing] = useState(false)
@@ -12,53 +12,49 @@ function HistoryEntry({ entry, onRemove, onLabelChange }) {
   }
 
   return (
-    <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-dark-surface transition-colors group">
+    <div className="flex items-start gap-3 px-3 py-3 rounded-2xl hover:bg-white/5 transition-colors group">
       <button
         onClick={() => setExpanded(v => !v)}
-        className="w-10 h-10 rounded-xl border border-dark-border shrink-0 hover:scale-110 transition-transform"
+        className="w-10 h-10 rounded-xl border border-white/10 shrink-0 hover:scale-110 transition-transform"
         style={{ backgroundColor: entry.hex }}
         aria-label={`Expand ${entry.name}`}
       />
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-white text-sm truncate">{entry.name}</p>
-        <p className="font-mono text-xs text-gray-500">{entry.hex}</p>
+        <p className="font-mono text-[11px] text-white/30">{entry.hex}</p>
         {editing ? (
-          <div className="flex gap-2 mt-1">
+          <div className="flex gap-2 mt-1.5">
             <input
               autoFocus
-              className="flex-1 bg-dark-bg border border-dark-border rounded-lg px-2 py-1 text-xs text-white focus:outline-none focus:border-gray-500"
+              className="flex-1 bg-white/5 border border-white/10 rounded-full px-2.5 py-1 text-xs text-white focus:outline-none focus:border-white/30"
               value={label}
               onChange={e => setLabel(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter') saveLabel()
-                if (e.key === 'Escape') setEditing(false)
-              }}
+              onKeyDown={e => { if (e.key === 'Enter') saveLabel(); if (e.key === 'Escape') setEditing(false) }}
               placeholder="Add a label…"
             />
-            <button onClick={saveLabel} className="text-xs text-green-400 hover:text-green-300 transition-colors">✓</button>
+            <button onClick={saveLabel} className="text-brand-green">
+              <CheckIcon size={13} strokeWidth={2.5} />
+            </button>
           </div>
         ) : (
-          <button
-            onClick={() => setEditing(true)}
-            className="text-xs text-gray-600 hover:text-gray-400 mt-0.5 transition-colors"
-          >
-            {entry.label || '+ Add label'}
+          <button onClick={() => setEditing(true)} className="text-[11px] text-white/20 hover:text-white/50 mt-0.5 transition-colors">
+            {entry.label || '+ label'}
           </button>
         )}
         {expanded && (
           <div className="mt-2 flex flex-col gap-0.5">
-            <span className="font-mono text-xs text-gray-500">{entry.rgb}</span>
-            <span className="font-mono text-xs text-gray-500">{entry.hsl}</span>
-            <span className="text-xs text-gray-600">{new Date(entry.savedAt).toLocaleDateString()}</span>
+            <span className="font-mono text-[11px] text-white/30">{entry.rgb}</span>
+            <span className="font-mono text-[11px] text-white/30">{entry.hsl}</span>
+            <span className="text-[11px] text-white/20">{new Date(entry.savedAt).toLocaleDateString()}</span>
           </div>
         )}
       </div>
       <button
         onClick={() => onRemove(entry.id)}
-        className="p-1.5 text-gray-700 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 shrink-0"
+        className="p-1.5 text-white/10 hover:text-brand-red transition-colors opacity-0 group-hover:opacity-100 shrink-0"
         aria-label={`Remove ${entry.name}`}
       >
-        ✕
+        <XIcon size={13} />
       </button>
     </div>
   )
@@ -69,47 +65,63 @@ export default function ColorHistory({ history, onRemove, onLabelChange, onClear
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-dark-border shrink-0">
-        <h2 className="font-bold text-white text-lg">Color History</h2>
-        <button onClick={onBack} className="text-gray-500 hover:text-white text-sm transition-colors">← Back</button>
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-white/[0.06] shrink-0">
+        <button onClick={onBack} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all">
+          <ArrowLeftIcon size={15} className="text-white/60" />
+        </button>
+        <h2 className="font-bold text-white flex-1">Color History</h2>
+        {history.length > 0 && (
+          <span className="text-xs bg-white/10 text-white/50 px-2 py-0.5 rounded-full">{history.length}</span>
+        )}
       </div>
 
-      <div className="flex-1 overflow-y-auto px-3 py-2">
+      <div className="flex-1 overflow-y-auto px-2 py-2">
         {history.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-48 gap-3 text-center">
-            <span className="text-4xl">🎨</span>
-            <p className="text-gray-500 text-sm">No saved colors yet. Hit the save button while detecting a color.</p>
+            <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center">
+              <PaletteIcon size={22} className="text-white/20" />
+            </div>
+            <p className="text-white/30 text-sm font-light max-w-[180px]">
+              No saved colors yet. Tap Save while detecting a color.
+            </p>
           </div>
         ) : (
           history.map(entry => (
-            <HistoryEntry
-              key={entry.id}
-              entry={entry}
-              onRemove={onRemove}
-              onLabelChange={onLabelChange}
-            />
+            <HistoryEntry key={entry.id} entry={entry} onRemove={onRemove} onLabelChange={onLabelChange} />
           ))
         )}
       </div>
 
       {history.length > 0 && (
-        <div className="flex gap-2 px-5 py-4 border-t border-dark-border shrink-0 flex-wrap">
-          <Button variant="secondary" size="sm" onClick={onExport} className="flex-1">
-            Export JSON
-          </Button>
+        <div className="flex gap-2 px-4 py-4 border-t border-white/[0.06] shrink-0">
+          <button
+            onClick={onExport}
+            className="flex items-center gap-1.5 px-4 py-2 bg-white/5 text-white/60 text-xs font-semibold rounded-full hover:bg-white/10 transition-all"
+          >
+            <DownloadIcon size={13} /> Export
+          </button>
           {confirmClear ? (
             <>
-              <Button variant="danger" size="sm" onClick={() => { onClearAll(); setConfirmClear(false) }}>
+              <button
+                onClick={() => { onClearAll(); setConfirmClear(false) }}
+                className="flex-1 py-2 bg-brand-red/20 text-brand-red text-xs font-semibold rounded-full hover:bg-brand-red/30 transition-all"
+              >
                 Confirm Clear
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => setConfirmClear(false)}>
+              </button>
+              <button
+                onClick={() => setConfirmClear(false)}
+                className="px-4 py-2 text-white/30 text-xs font-semibold hover:text-white/60 transition-colors"
+              >
                 Cancel
-              </Button>
+              </button>
             </>
           ) : (
-            <Button variant="ghost" size="sm" onClick={() => setConfirmClear(true)}>
+            <button
+              onClick={() => setConfirmClear(true)}
+              className="ml-auto px-4 py-2 text-white/20 text-xs font-semibold hover:text-white/50 transition-colors"
+            >
               Clear All
-            </Button>
+            </button>
           )}
         </div>
       )}

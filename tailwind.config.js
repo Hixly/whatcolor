@@ -5,27 +5,56 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['"Outfit"', 'system-ui', '-apple-system', 'sans-serif'],
       },
       colors: {
         brand: {
-          red: '#E63946',
-          orange: '#F4A261',
-          yellow: '#E9C46A',
-          green: '#2A9D8F',
-          blue: '#264653',
-          purple: '#7B2D8E',
+          red: '#FF3B30',
+          orange: '#FF9500',
+          yellow: '#FFD60A',
+          green: '#30D158',
+          blue: '#0A84FF',
+          purple: '#BF5AF2',
         },
         dark: {
           bg: '#0A0A0A',
-          surface: '#141414',
-          border: '#2A2A2A',
+          surface: '#111111',
+          border: '#222222',
         },
         light: {
-          bg: '#FAFAFA',
-          surface: '#FFFFFF',
-          border: '#E5E5E5',
+          bg: '#FFFFFF',
+          surface: '#F7F7F7',
+          border: '#EBEBEB',
         },
+      },
+      keyframes: {
+        fadeUp: {
+          from: { opacity: '0', transform: 'translateY(24px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeIn: {
+          from: { opacity: '0' },
+          to: { opacity: '1' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-8px)' },
+        },
+        scaleIn: {
+          from: { opacity: '0', transform: 'scale(0.94)' },
+          to: { opacity: '1', transform: 'scale(1)' },
+        },
+        spinSlow: {
+          from: { transform: 'rotate(0deg)' },
+          to: { transform: 'rotate(360deg)' },
+        },
+      },
+      animation: {
+        'fade-up': 'fadeUp 0.65s cubic-bezier(0.16,1,0.3,1) both',
+        'fade-in': 'fadeIn 0.5s ease-out both',
+        'float': 'float 4s ease-in-out infinite',
+        'scale-in': 'scaleIn 0.45s cubic-bezier(0.16,1,0.3,1) both',
+        'spin-slow': 'spinSlow 12s linear infinite',
       },
     },
   },

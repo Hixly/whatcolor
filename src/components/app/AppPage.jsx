@@ -6,6 +6,7 @@ import ImageUploadView from './ImageUploadView'
 import CompareMode from './CompareMode'
 import ColorHistory from './ColorHistory'
 import ColorInfoPanel from './ColorInfoPanel'
+import { CompareIcon, HistoryIcon } from '../ui/Icons'
 
 export default function AppPage() {
   const [searchParams] = useSearchParams()
@@ -19,7 +20,7 @@ export default function AppPage() {
 
   return (
     <div className="fixed inset-0 bg-black flex flex-col lg:flex-row overflow-hidden">
-      {/* Main camera/upload area */}
+      {/* Main area */}
       <div className="flex-1 relative min-h-0">
         {mode === 'camera' && (
           <CameraView
@@ -37,73 +38,56 @@ export default function AppPage() {
           />
         )}
         {(mode === 'compare' || mode === 'history') && (
-          <div className="absolute inset-0 flex items-center justify-center bg-dark-bg text-gray-600 text-sm select-none">
-            Camera paused — switch back to use live detection
+          <div className="absolute inset-0 flex items-center justify-center bg-[#0A0A0A] text-white/20 text-sm select-none font-light">
+            Camera paused
           </div>
         )}
       </div>
 
-      {/* Desktop sidebar — only visible on lg+ */}
-      <div className="hidden lg:flex w-[380px] bg-dark-surface border-l border-dark-border flex-col overflow-hidden">
-        {mode === 'camera' || mode === 'upload' ? (
-          <div className="flex-1 overflow-y-auto p-5">
-            {/* Mode toggle buttons */}
-            <div className="mb-4 flex gap-2">
+      {/* Desktop sidebar */}
+      <div className="hidden lg:flex w-[360px] bg-[#111] border-l border-white/[0.06] flex-col overflow-hidden">
+        {/* Pill tab strip */}
+        {(mode === 'camera' || mode === 'upload') && (
+          <div className="px-4 pt-4 pb-0 shrink-0">
+            <div className="flex gap-2 p-1 bg-white/5 rounded-2xl">
               <button
                 onClick={() => setMode('compare')}
-                className="flex-1 py-2 rounded-xl bg-dark-bg border border-dark-border text-sm text-gray-400 hover:text-white hover:border-gray-500 transition-colors"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-white/40 hover:text-white/70 hover:bg-white/5 transition-all duration-200"
               >
-                ⚖️ Compare
+                <CompareIcon size={13} /> Compare
               </button>
               <button
                 onClick={() => setMode('history')}
-                className="flex-1 py-2 rounded-xl bg-dark-bg border border-dark-border text-sm text-gray-400 hover:text-white hover:border-gray-500 transition-colors"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-white/40 hover:text-white/70 hover:bg-white/5 transition-all duration-200"
               >
-                🕐 History {history.length > 0 && `(${history.length})`}
+                <HistoryIcon size={13} /> History {history.length > 0 && <span className="ml-0.5 bg-white/10 px-1.5 py-0.5 rounded-full text-[10px]">{history.length}</span>}
               </button>
             </div>
-            <ColorInfoPanel color={currentColor} onSave={color => save(color)} />
+          </div>
+        )}
+
+        {(mode === 'camera' || mode === 'upload') ? (
+          <div className="flex-1 overflow-y-auto p-4">
+            <ColorInfoPanel color={currentColor} onSave={color => save(color)} dark />
           </div>
         ) : mode === 'compare' ? (
           <div className="flex-1 overflow-hidden">
-            <CompareMode
-              currentColor={currentColor}
-              history={history}
-              onBack={() => setMode('camera')}
-            />
+            <CompareMode currentColor={currentColor} history={history} onBack={() => setMode('camera')} />
           </div>
         ) : (
           <div className="flex-1 overflow-hidden">
-            <ColorHistory
-              history={history}
-              onRemove={remove}
-              onLabelChange={updateLabel}
-              onClearAll={clearAll}
-              onExport={exportJson}
-              onBack={() => setMode('camera')}
-            />
+            <ColorHistory history={history} onRemove={remove} onLabelChange={updateLabel} onClearAll={clearAll} onExport={exportJson} onBack={() => setMode('camera')} />
           </div>
         )}
       </div>
 
-      {/* Mobile compare/history — full-screen overlay */}
+      {/* Mobile compare/history overlay */}
       {(mode === 'compare' || mode === 'history') && (
-        <div className="lg:hidden absolute inset-0 bg-dark-bg z-20 overflow-hidden flex flex-col">
+        <div className="lg:hidden absolute inset-0 bg-[#111] z-20 overflow-hidden flex flex-col">
           {mode === 'compare' ? (
-            <CompareMode
-              currentColor={currentColor}
-              history={history}
-              onBack={() => setMode('camera')}
-            />
+            <CompareMode currentColor={currentColor} history={history} onBack={() => setMode('camera')} />
           ) : (
-            <ColorHistory
-              history={history}
-              onRemove={remove}
-              onLabelChange={updateLabel}
-              onClearAll={clearAll}
-              onExport={exportJson}
-              onBack={() => setMode('camera')}
-            />
+            <ColorHistory history={history} onRemove={remove} onLabelChange={updateLabel} onClearAll={clearAll} onExport={exportJson} onBack={() => setMode('camera')} />
           )}
         </div>
       )}
