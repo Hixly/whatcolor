@@ -34,13 +34,14 @@ export default function ColorInfoPanel({ color, onSave, dark = false, compact = 
   const { settings } = useSettings()
   const [saved, setSaved] = useState(false)
 
-  function handleSave() {
+  function handleSave(e) {
+    if (e) e.stopPropagation()
     onSave?.(color)
     setSaved(true)
     setTimeout(() => setSaved(false), 1500)
   }
 
-  // ── Compact mode: single-row pill for camera overlay ──────────────────────
+  // ── Compact: single-row camera strip ──────────────────────────────────────
   if (compact) {
     return (
       <div className={`flex items-center gap-3 px-4 py-3 ${className}`}>
@@ -53,18 +54,16 @@ export default function ColorInfoPanel({ color, onSave, dark = false, compact = 
           {color ? (
             <>
               <p className="font-bold text-white text-sm leading-tight truncate">{color.name}</p>
-              <p className="text-[11px] text-white/40 truncate mt-0.5">
-                <span className="font-mono">{color.hex}</span>
-                {color.descriptive && <span> · {color.descriptive}</span>}
-              </p>
-              {color.confusion && (
-                <p className="text-[10px] text-yellow-400/70 truncate mt-0.5">{color.confusion}</p>
-              )}
+              <p className="font-mono text-[11px] text-white/40 truncate mt-0.5">{color.hex}</p>
             </>
           ) : (
             <p className="text-sm text-white/30 font-light">Aim crosshair at a color</p>
           )}
         </div>
+        {/* Expand hint */}
+        {color && (
+          <span className="text-white/20 text-[10px] font-light shrink-0 mr-1">tap for details</span>
+        )}
         {onSave && color && (
           <button
             onClick={handleSave}
