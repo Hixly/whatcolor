@@ -4,14 +4,29 @@ import { nearestColorName } from '../utils/colorNames'
 import { descriptiveName, contextualReference } from '../utils/colorDescriptions'
 import { getConfusionWarning } from '../utils/confusionPairs'
 
-// EMA alpha=0.80 — 80% new data per sample at 30fps.
-// Name gate: must match 3 consecutive frames (~100ms) before confirming.
-// Hold time: once confirmed, name stays for at least 400ms before it can
-// change again. Prevents flicker when scanning across color boundaries.
-const EMA_ALPHA = 0.80
+// Adaptive EMA: slow (0.70) when camera is steady — strong smoothing, fewer
+// spurious updates. Fast (0.85) when a real color shift is detected (raw diff
+// across channels exceeds CHANGE_THRESHOLD). Reverts to slow once settled.
+const EMA_SLOW = 0.70
+const EMA_FAST = 0.85
+const CHANGE_THRESHOLD = 25  // total RGB delta that signals a real shift
+
+// Name gate: new name must hold for NAME_FRAMES consecutive samples before
+// it replaces the confirmed name. Prevents boundary flicker.
 const NAME_FRAMES = 3
+
+// Hold time: once a name is confirmed, it stays for at least HOLD_MS.
+// Caps involuntary name changes when scanning to ~2-3 per second.
 const HOLD_MS = 400
 
+// Median of an array — robust against single-pixel compression spikes.
+function median(arr) {
+  arr.sort((a, b) => a - b)
+  return arr[Math.floor(arr.length / 2)]
+}
+
+// Sample a size×size region around (cx, cy) and return the per-channel median.
+// Median is far more resistant to JPEG/H.264 block artifacts than the mean.
 function sampleCanvas(canvas, cx, cy, size) {
   const ctx = canvas.getContext('2d')
   const half = Math.floor(size / 2)
@@ -22,12 +37,12 @@ function sampleCanvas(canvas, cx, cy, size) {
     size
   )
   const d = imageData.data
-  let r = 0, g = 0, b = 0
+  const rs = [], gs = [], bs = []
   const count = size * size
   for (let i = 0; i < count * 4; i += 4) {
-    r += d[i]; g += d[i + 1]; b += d[i + 2]
+    rs.push(d[i]); gs.push(d[i + 1]); bs.push(d[i + 2])
   }
-  return { r: Math.round(r / count), g: Math.round(g / count), b: Math.round(b / count) }
+  return { r: median(rs), g: median(gs), b: median(bs) }
 }
 
 export function useColorDetection({ videoRef, canvasRef, samplingSize = 3, profile = 'none', active = true }) {
@@ -56,7 +71,7 @@ export function useColorDetection({ videoRef, canvasRef, samplingSize = 3, profi
     }
   }, [profile])
 
-  // Tap-to-sample — skip smoothing and gates, show result immediately
+  // Tap-to-sample — bypass smoothing and gates for instant response
   const samplePoint = useCallback((x, y) => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -76,8 +91,7 @@ export function useColorDetection({ videoRef, canvasRef, samplingSize = 3, profi
 
     function loop() {
       frameCount.current++
-      // ~30fps: sample every 2 frames
-      if (frameCount.current % 2 === 0) {
+      if (frameCount.current % 2 === 0) {  // ~30 fps
         const video = videoRef.current
         const canvas = canvasRef.current
         if (video && canvas && video.readyState >= 2) {
@@ -90,21 +104,26 @@ export function useColorDetection({ videoRef, canvasRef, samplingSize = 3, profi
           const cy = Math.floor(canvas.height / 2)
           const raw = sampleCanvas(canvas, cx, cy, samplingSize)
 
-          // EMA smooth
+          // Adaptive EMA: fast when a real change is detected, slow otherwise.
           if (!smoothRef.current) {
             smoothRef.current = raw
           } else {
+            const diff =
+              Math.abs(raw.r - smoothRef.current.r) +
+              Math.abs(raw.g - smoothRef.current.g) +
+              Math.abs(raw.b - smoothRef.current.b)
+            const alpha = diff > CHANGE_THRESHOLD ? EMA_FAST : EMA_SLOW
             smoothRef.current = {
-              r: Math.round(EMA_ALPHA * raw.r + (1 - EMA_ALPHA) * smoothRef.current.r),
-              g: Math.round(EMA_ALPHA * raw.g + (1 - EMA_ALPHA) * smoothRef.current.g),
-              b: Math.round(EMA_ALPHA * raw.b + (1 - EMA_ALPHA) * smoothRef.current.b),
+              r: Math.round(alpha * raw.r + (1 - alpha) * smoothRef.current.r),
+              g: Math.round(alpha * raw.g + (1 - alpha) * smoothRef.current.g),
+              b: Math.round(alpha * raw.b + (1 - alpha) * smoothRef.current.b),
             }
           }
 
           const { r, g, b } = smoothRef.current
           const analyzed = analyze(r, g, b)
 
-          // 3-frame name gate: new name must appear 3 consecutive samples
+          // 3-frame name gate
           if (analyzed.name !== pendingName.current) {
             pendingName.current = analyzed.name
             pendingCount.current = 1
@@ -112,8 +131,7 @@ export function useColorDetection({ videoRef, canvasRef, samplingSize = 3, profi
             pendingCount.current++
           }
 
-          // 400ms hold: confirmed name stays locked until hold expires,
-          // then the 3-frame gate must pass again for any new name.
+          // 400 ms hold before any name change is allowed
           const holdExpired = Date.now() - confirmedAt.current >= HOLD_MS
           const nameReady = pendingCount.current >= NAME_FRAMES && holdExpired
           const nameChanged = nameReady && analyzed.name !== confirmedName.current
