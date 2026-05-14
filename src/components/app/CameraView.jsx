@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { useSettings } from '../../contexts/SettingsContext'
 import { useCamera } from '../../hooks/useCamera'
 import { useColorDetection } from '../../hooks/useColorDetection'
-import CrosshairReticle from './CrosshairReticle'
 import ColorInfoPanel from './ColorInfoPanel'
 import { FlashIcon, PlayIcon, PauseIcon, UploadIcon, CompareIcon, HistoryIcon, SettingsIcon, CameraIcon } from '../ui/Icons'
 
@@ -101,7 +100,7 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
           role="button" aria-label="Tap to sample color at this point" />
       )}
 
-      {/* Crosshair */}
+      {/* Crosshair — actual logo symbol, white-line variant for camera visibility */}
       <div
         className="absolute pointer-events-none transition-all duration-150"
         style={
@@ -110,7 +109,14 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
             : { left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }
         }
       >
-        <CrosshairReticle size={80} lineColor="white" />
+        <img
+          src="/logo-symbol-white.png"
+          alt=""
+          width={88}
+          height={88}
+          className="drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]"
+          draggable={false}
+        />
       </div>
 
       {/* Top bar */}

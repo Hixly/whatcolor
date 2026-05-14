@@ -4,6 +4,11 @@ import { nearestColorName } from '../utils/colorNames'
 import { descriptiveName, contextualReference } from '../utils/colorDescriptions'
 import { getConfusionWarning } from '../utils/confusionPairs'
 
+// Exponential moving average — blends new sample with running smooth value.
+// alpha=0.25 means 25% new data each frame → dampens camera noise while
+// still tracking real color changes within ~0.5s (5 frames at 10fps).
+const EMA_ALPHA = 0.25
+
 function sampleCanvas(canvas, cx, cy, size) {
   const ctx = canvas.getContext('2d')
   const half = Math.floor(size / 2)
@@ -25,8 +30,11 @@ function sampleCanvas(canvas, cx, cy, size) {
 export function useColorDetection({ videoRef, canvasRef, samplingSize = 3, profile = 'none', active = true }) {
   const [color, setColor] = useState(null)
   const rafRef = useRef(null)
-  const lastHex = useRef(null)
   const frameCount = useRef(0)
+  const smoothRef = useRef(null)       // EMA-smoothed RGB
+  const confirmedHex = useRef(null)    // last hex we actually displayed
+  const pendingHex = useRef(null)      // candidate hex waiting for confirmation
+  const pendingCount = useRef(0)       // how many consecutive frames this candidate appeared
 
   const analyze = useCallback((r, g, b) => {
     const hex = formatHex(r, g, b)
@@ -43,11 +51,17 @@ export function useColorDetection({ videoRef, canvasRef, samplingSize = 3, profi
     }
   }, [profile])
 
+  // Manual point sample (tap-to-sample) — bypass smoothing, instant result
   const samplePoint = useCallback((x, y) => {
     const canvas = canvasRef.current
     if (!canvas) return
     const { r, g, b } = sampleCanvas(canvas, x, y, samplingSize)
-    setColor(analyze(r, g, b))
+    smoothRef.current = { r, g, b }
+    const result = analyze(r, g, b)
+    confirmedHex.current = result.hex
+    pendingHex.current = result.hex
+    pendingCount.current = 2
+    setColor(result)
   }, [canvasRef, samplingSize, analyze])
 
   useEffect(() => {
@@ -55,7 +69,6 @@ export function useColorDetection({ videoRef, canvasRef, samplingSize = 3, profi
 
     function loop() {
       frameCount.current++
-      // Sample at ~10fps (every 6 frames at ~60fps)
       if (frameCount.current % 6 === 0) {
         const video = videoRef.current
         const canvas = canvasRef.current
@@ -64,12 +77,36 @@ export function useColorDetection({ videoRef, canvasRef, samplingSize = 3, profi
           canvas.width = video.videoWidth
           canvas.height = video.videoHeight
           ctx.drawImage(video, 0, 0)
+
           const cx = Math.floor(canvas.width / 2)
           const cy = Math.floor(canvas.height / 2)
-          const { r, g, b } = sampleCanvas(canvas, cx, cy, samplingSize)
+          const raw = sampleCanvas(canvas, cx, cy, samplingSize)
+
+          // Apply EMA smoothing
+          if (!smoothRef.current) {
+            smoothRef.current = raw
+          } else {
+            smoothRef.current = {
+              r: Math.round(EMA_ALPHA * raw.r + (1 - EMA_ALPHA) * smoothRef.current.r),
+              g: Math.round(EMA_ALPHA * raw.g + (1 - EMA_ALPHA) * smoothRef.current.g),
+              b: Math.round(EMA_ALPHA * raw.b + (1 - EMA_ALPHA) * smoothRef.current.b),
+            }
+          }
+
+          const { r, g, b } = smoothRef.current
           const hex = formatHex(r, g, b)
-          if (hex !== lastHex.current) {
-            lastHex.current = hex
+
+          // Require 2 consecutive frames with the same smoothed hex before
+          // committing — this stops single-frame noise from flipping the name.
+          if (hex === pendingHex.current) {
+            pendingCount.current++
+          } else {
+            pendingHex.current = hex
+            pendingCount.current = 1
+          }
+
+          if (pendingCount.current >= 2 && hex !== confirmedHex.current) {
+            confirmedHex.current = hex
             setColor(analyze(r, g, b))
           }
         }
