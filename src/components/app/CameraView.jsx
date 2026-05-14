@@ -6,16 +6,16 @@ import { useColorDetection } from '../../hooks/useColorDetection'
 import ColorInfoPanel from './ColorInfoPanel'
 import { FlashIcon, PlayIcon, PauseIcon, UploadIcon, CompareIcon, HistoryIcon, SettingsIcon, CameraIcon } from '../ui/Icons'
 
-function IconBtn({ onClick, active, children, label, className = '' }) {
+function SmallBtn({ onClick, active, children, label, className = '' }) {
   return (
     <button
       onClick={onClick}
       aria-label={label}
       title={label}
-      className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 ${
+      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 ${
         active
-          ? 'bg-white/25 text-white'
-          : 'bg-black/30 text-white/80 hover:bg-black/50 hover:text-white'
+          ? 'bg-white/30 text-white'
+          : 'bg-black/40 text-white/70 hover:bg-black/60 hover:text-white'
       } ${className}`}
     >
       {children}
@@ -87,77 +87,136 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
     samplePoint(Math.round(xRatio * canvas.width), Math.round(yRatio * canvas.height))
   }
 
+  function togglePause() {
+    setPaused(v => !v)
+    setTapPoint(null)
+  }
+
   if (status === 'denied') return <PermissionDenied />
   if (status === 'unavailable') return <CameraUnavailable onSwitchToUpload={onSwitchToUpload} />
 
+  // Bottom section is ~200px: color pill (72px) + controls row (80px) + gaps/padding
+  const BOTTOM_HEIGHT = 200
+
   return (
     <div className="relative w-full h-full bg-black overflow-hidden">
+      {/* Camera feed — full bleed */}
       <video ref={videoRef} className="absolute inset-0 w-full h-full object-cover" playsInline muted aria-label="Camera feed" />
       <canvas ref={canvasRef} className="hidden" />
 
+      {/* Tap overlay (pause mode) */}
       {paused && (
-        <div className="absolute inset-0 cursor-crosshair" onClick={handleTapOnPaused}
-          role="button" aria-label="Tap to sample color at this point" />
+        <div
+          className="absolute inset-0 cursor-crosshair"
+          onClick={handleTapOnPaused}
+          role="button"
+          aria-label="Tap to sample color at this point"
+        />
       )}
 
-      {/* Crosshair — actual logo symbol, white-line variant for camera visibility */}
-      <div
-        className="absolute pointer-events-none transition-all duration-150"
-        style={
-          paused && tapPoint
-            ? { left: `${tapPoint.xPct}%`, top: `${tapPoint.yPct}%`, transform: 'translate(-50%, -50%)' }
-            : { left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }
-        }
-      >
-        <img
-          src="/logo-symbol-white.png"
-          alt=""
-          width={88}
-          height={88}
-          className="drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]"
-          draggable={false}
-        />
-      </div>
-
-      {/* Top bar */}
-      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 pt-safe py-3 bg-gradient-to-b from-black/70 via-black/20 to-transparent">
-        <Link to="/">
-          <img src="/logo-symbol.png" alt="WhatColor" className="h-7 w-7 object-contain brightness-0 invert" />
+      {/* ── Top bar — minimal: home left, settings right ──────────────────── */}
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-5 pt-safe py-4 bg-gradient-to-b from-black/60 via-black/20 to-transparent">
+        <Link
+          to="/"
+          className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center"
+          aria-label="Home"
+        >
+          {/* logo-symbol-transparent.png: brightness-0 invert makes it pure white */}
+          <img
+            src="/logo-symbol-transparent.png"
+            alt=""
+            className="h-5 w-5 object-contain brightness-0 invert"
+            draggable={false}
+          />
         </Link>
-        <div className="flex items-center gap-1.5">
-          <IconBtn onClick={toggleTorch} active={torchOn} label="Toggle flashlight">
-            <FlashIcon size={16} />
-          </IconBtn>
-          <IconBtn onClick={() => { setPaused(v => !v); setTapPoint(null) }} active={paused} label={paused ? 'Resume' : 'Pause & tap to sample'}>
-            {paused ? <PlayIcon size={16} /> : <PauseIcon size={16} />}
-          </IconBtn>
-          <IconBtn onClick={onSwitchToUpload} label="Upload image">
-            <UploadIcon size={16} />
-          </IconBtn>
-          <IconBtn onClick={onSwitchToCompare} label="Compare colors">
-            <CompareIcon size={16} />
-          </IconBtn>
-          <IconBtn onClick={onSwitchToHistory} label="Color history">
-            <HistoryIcon size={16} />
-          </IconBtn>
-          <Link
-            to="/settings"
-            className="w-9 h-9 rounded-full flex items-center justify-center bg-black/30 text-white/80 hover:bg-black/50 hover:text-white transition-all duration-200"
-            aria-label="Settings"
+        <Link
+          to="/settings"
+          className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+          aria-label="Settings"
+        >
+          <SettingsIcon size={17} />
+        </Link>
+      </div>
+
+      {/* ── Crosshair — centered in the visible camera area above controls ── */}
+      {!paused || !tapPoint ? (
+        <div
+          className="absolute inset-x-0 top-0 pointer-events-none flex items-center justify-center"
+          style={{ bottom: BOTTOM_HEIGHT }}
+        >
+          <img
+            src="/logo-symbol-white.png"
+            alt=""
+            width={88}
+            height={88}
+            className="drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)]"
+            draggable={false}
+          />
+        </div>
+      ) : (
+        <div
+          className="absolute pointer-events-none transition-all duration-150"
+          style={{
+            left: `${tapPoint.xPct}%`,
+            top: `${tapPoint.yPct}%`,
+            transform: 'translate(-50%, -50%)',
+          }}
+        >
+          <img
+            src="/logo-symbol-white.png"
+            alt=""
+            width={88}
+            height={88}
+            className="drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)]"
+            draggable={false}
+          />
+        </div>
+      )}
+
+      {/* ── Bottom section ─────────────────────────────────────────────────── */}
+      <div className="absolute bottom-0 left-0 right-0" style={{ height: BOTTOM_HEIGHT }}>
+
+        {/* Controls row: flash | [compare, history, upload] | PAUSE (center) */}
+        <div className="flex items-center justify-between px-7 pt-4 pb-2">
+          {/* Left: torch */}
+          <SmallBtn onClick={toggleTorch} active={torchOn} label="Toggle flashlight">
+            <FlashIcon size={18} />
+          </SmallBtn>
+
+          {/* Center: pause/resume — hero button */}
+          <button
+            onClick={togglePause}
+            aria-label={paused ? 'Resume' : 'Pause & tap to sample'}
+            className={`w-[60px] h-[60px] rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 shadow-xl ${
+              paused
+                ? 'bg-white text-black'
+                : 'bg-white/20 border-2 border-white/50 text-white hover:bg-white/30'
+            }`}
           >
-            <SettingsIcon size={16} />
-          </Link>
+            {paused ? <PlayIcon size={22} /> : <PauseIcon size={22} />}
+          </button>
+
+          {/* Right: secondary tools cluster */}
+          <div className="flex items-center gap-1.5">
+            <SmallBtn onClick={onSwitchToUpload} label="Upload image">
+              <UploadIcon size={16} />
+            </SmallBtn>
+            <SmallBtn onClick={onSwitchToCompare} label="Compare colors">
+              <CompareIcon size={16} />
+            </SmallBtn>
+            <SmallBtn onClick={onSwitchToHistory} label="Color history">
+              <HistoryIcon size={16} />
+            </SmallBtn>
+          </div>
+        </div>
+
+        {/* Color info — compact pill */}
+        <div className="mx-3 mb-3 bg-[#0f0f0f]/90 backdrop-blur-xl rounded-2xl border border-white/[0.07]">
+          <ColorInfoPanel color={color} onSave={onSave} dark compact />
         </div>
       </div>
 
-      {/* Mobile bottom panel */}
-      <div className="absolute bottom-0 left-0 right-0 lg:hidden">
-        <div className="mx-3 mb-3 bg-[#111]/90 backdrop-blur-xl rounded-3xl p-4 border border-white/10">
-          <ColorInfoPanel color={color} onSave={onSave} dark />
-        </div>
-      </div>
-
-      {/* Camera requesting */}
+      {/* Camera requesting overlay */}
       {status === 'requesting' && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-3">
