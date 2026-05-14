@@ -9,6 +9,12 @@
   .dark body { @apply bg-dark-bg text-[#F0F0F0]; }
 }
 
+@keyframes orbColor {
+  0%, 100% { filter: blur(60px) hue-rotate(0deg);   opacity: 0.12; }
+  33%       { filter: blur(54px) hue-rotate(120deg); opacity: 0.28; }
+  66%       { filter: blur(66px) hue-rotate(240deg); opacity: 0.15; }
+}
+
 @layer utilities {
   .delay-100 { animation-delay: 100ms; }
   .delay-150 { animation-delay: 150ms; }
@@ -18,4 +24,12 @@
   .delay-500 { animation-delay: 500ms; }
   .delay-600 { animation-delay: 600ms; }
   .delay-700 { animation-delay: 700ms; }
+
+  .shimmer-text {
+    background: linear-gradient(90deg, #FF3B30, #FF9500, #FFD60A, #30D158, #0A84FF, #BF5AF2, #FF3B30);
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
 }
