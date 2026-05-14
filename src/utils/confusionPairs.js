@@ -31,6 +31,9 @@ function hInRange(h, [min, max]) {
 
 export function getConfusionWarning(h, s, l, profile) {
   if (!profile || profile === 'none') return null
+  // At near-black (l < 5%) or near-white (l > 96%), all colors look the same.
+  // Any hue-based confusion warning would be misleading.
+  if (l < 5 || l > 96) return null
   const zones = CONFUSION_ZONES[profile] || []
   for (const zone of zones) {
     if (!hInRange(h, zone.hRange)) continue

@@ -3,6 +3,11 @@ import { rgbToHsl } from './colorConversions'
 export function descriptiveName(r, g, b) {
   const { h, s, l } = rgbToHsl(r, g, b)
 
+  // At extreme luminance, hue/saturation are perceptually invisible.
+  // Even 60% saturation at 1% lightness is indistinguishable from black.
+  if (l < 5) return 'Near Black'
+  if (l > 96) return 'Near White'
+
   let lightness = ''
   if (l < 10) lightness = 'Very Dark'
   else if (l < 25) lightness = 'Dark'
@@ -13,7 +18,7 @@ export function descriptiveName(r, g, b) {
   else lightness = 'Very Light'
 
   if (s < 8) {
-    if (l < 15) return 'Near Black'
+    if (l < 20) return 'Near Black'
     if (l > 90) return 'Near White'
     if (l < 40) return 'Dark Gray'
     if (l < 60) return 'Medium Gray'
@@ -47,6 +52,7 @@ export function descriptiveName(r, g, b) {
 
 export function contextualReference(r, g, b) {
   const { h, s, l } = rgbToHsl(r, g, b)
+  if (l < 5 || l > 96) return null
   if (s < 8) return null
   if (h < 15 || h >= 345) {
     if (s > 60 && l > 35 && l < 60) return 'Like a ripe tomato or fire truck'
