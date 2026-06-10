@@ -1,16 +1,36 @@
-# React + Vite
+# WhatColor
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> A color identification tool built for the colorblind — point your camera at anything and instantly know what color it is.
 
-Currently, two official plugins are available:
+**Live:** [what-color.com](https://what-color.com)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+I built WhatColor because color-naming should be a phone-camera-and-a-second moment, not a 4-step app workflow. Open the site, point, hear the name. That's it.
 
-## React Compiler
+## How it works
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Real-time camera sampling** at 60fps through the browser's MediaStream API
+- **Crosshair-targeted color detection** — the small center region is what gets sampled
+- **Adaptive EMA smoothing** (α=0.85) so the color name doesn't flicker between shades
+- **Median sampling over the crosshair region** to reject single-pixel noise
+- **Luminance-aware naming** — suppresses hue-based names at extreme dark/light values where they'd be wrong
+- **SVG crosshair overlay** for sharp rendering at any resolution
 
-## Expanding the ESLint configuration
+No app install. No login. Just open it.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Built with
+
+- React + Vite
+- Browser MediaStream API
+- Tailwind CSS
+- Deployed on Vercel
+
+## Run locally
+
+```bash
+git clone https://github.com/Hixly/whatcolor.git
+cd whatcolor
+npm install
+npm run dev
+```
+
+Then open the dev URL on your phone (same Wi-Fi network) to test with a real camera.
