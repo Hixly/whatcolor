@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Hero from './Hero'
+import AppShowcase from './AppShowcase'
 import HowItWorks from './HowItWorks'
 import Features from './Features'
 
@@ -37,6 +38,10 @@ export default function LandingPage() {
 
       <div className="relative" style={{ zIndex: 1 }}>
         <Hero />
+
+        <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mx-8" />
+
+        <AppShowcase />
 
         <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mx-8" />
 

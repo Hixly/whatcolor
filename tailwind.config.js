@@ -63,6 +63,10 @@ export default {
           '30%': { transform: 'translateY(-14px)' },
           '60%': { transform: 'translateY(4px)' },
         },
+        lockPulse: {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.55', transform: 'scale(1.06)' },
+        },
       },
       animation: {
         'fade-up': 'fadeUp 0.65s cubic-bezier(0.16,1,0.3,1) both',
@@ -73,6 +77,7 @@ export default {
         'float-orb': 'floatOrb 8s ease-in-out infinite',
         'shimmer': 'shimmer 3s linear infinite',
         'wave': 'wave 0.65s cubic-bezier(0.36,0.07,0.19,0.97) both',
+        'lock-pulse': 'lockPulse 1.8s ease-in-out infinite',
       },
     },
   },
