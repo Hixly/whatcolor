@@ -5,14 +5,14 @@ import ColorCyclePill from './ColorCyclePill'
 import TrustPills from './TrustPills'
 
 const LINE1_CHARS = 'Identify any '.split('')
-const LINE2_CHARS = 'around you — instantly.'.split('')
+const LINE2_CHARS = 'around you — instantly.'.split('')
 const COLOR_OFFSET = LINE1_CHARS.length
-const LINE2_OFFSET = COLOR_OFFSET + 'color'.length + 1
+const LINE2_OFFSET = COLOR_OFFSET + 'color'.length
 
 function WaveChar({ char, delay }) {
   return (
     <span className="inline-block animate-wave" style={{ animationDelay: `${delay}ms` }}>
-      {char === ' ' ? ' ' : char}
+      {char === ' ' ? '\u00a0' : char}
     </span>
   )
 }
@@ -21,22 +21,26 @@ export default function Hero() {
   const headlineRef = useRef(null)
   const [waveKey, setWaveKey] = useState(0)
 
+  // Play wave on first paint — hero is always above the fold on load.
+  useEffect(() => {
+    setWaveKey(1)
+  }, [])
+
   useEffect(() => {
     const el = headlineRef.current
     if (!el) return
     const obs = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) setWaveKey(k => k + 1) },
-      { threshold: 0.4 }
+      { threshold: 0.35 },
     )
     obs.observe(el)
     return () => obs.disconnect()
   }, [])
 
   return (
-    <section className="flex flex-col items-center justify-center text-center px-6 pt-20 md:pt-28 pb-16 md:pb-24 gap-10 md:gap-12 overflow-hidden">
+    <section className="flex flex-col items-center justify-center text-center px-6 pt-16 pb-20 gap-10 overflow-hidden">
 
-      {/* Logo with spinning rainbow ring */}
-      <div className="relative animate-scale-in flex items-center justify-center">
+      <div className="relative animate-fade-in flex items-center justify-center">
         <div
           className="absolute rounded-full animate-spin-slow"
           style={{
@@ -50,32 +54,36 @@ export default function Hero() {
         />
         <img
           src="/logo-lockup-transparent.png"
+          srcSet="/logo-lockup-transparent.png 1x, /logo-lockup-transparent@2x.png 2x"
           alt="WhatColor — See More. Know More."
-          className="relative w-72 md:w-96 h-auto select-none"
+          className="relative w-64 sm:w-72 md:w-96 h-auto select-none"
+          width={384}
+          height={120}
+          decoding="sync"
+          fetchPriority="high"
           draggable={false}
         />
       </div>
 
-      {/* Headline with scroll-triggered wave animation */}
-      <div ref={headlineRef} className="max-w-2xl animate-fade-up delay-200">
+      <div ref={headlineRef} className="w-full max-w-2xl animate-fade-up delay-200">
         <h1
           key={waveKey}
-          className="text-4xl md:text-6xl font-bold text-gray-900 leading-[1.1] tracking-tight mb-5"
+          className="text-[2rem] leading-[1.15] sm:text-4xl md:text-6xl font-bold text-gray-900 tracking-tight mb-5 mx-auto"
         >
-          {LINE1_CHARS.map((char, i) => (
-            <WaveChar key={i} char={char} delay={i * 35} />
-          ))}
-          <span
-            className="shimmer-text animate-shimmer inline-block animate-wave"
-            style={{ animationDelay: `${COLOR_OFFSET * 35}ms` }}
-          >
-            color
+          <span className="flex flex-wrap justify-center gap-x-[0.2em]">
+            {LINE1_CHARS.map((char, i) => (
+              <WaveChar key={`l1-${i}`} char={char} delay={i * 35} />
+            ))}
+            <span
+              className="shimmer-text animate-shimmer inline-block animate-wave"
+              style={{ animationDelay: `${COLOR_OFFSET * 35}ms` }}
+            >
+              color
+            </span>
           </span>
-          <br className="hidden md:block" />
-          {' '}
-          <span className="font-light" style={{ color: '#9ca3af' }}>
+          <span className="mt-1 flex flex-wrap justify-center gap-x-[0.2em] font-light text-gray-400">
             {LINE2_CHARS.map((char, i) => (
-              <WaveChar key={i} char={char} delay={(LINE2_OFFSET + i) * 35} />
+              <WaveChar key={`l2-${i}`} char={char} delay={(LINE2_OFFSET + i) * 35} />
             ))}
           </span>
         </h1>
@@ -84,8 +92,7 @@ export default function Hero() {
         </p>
       </div>
 
-      {/* CTAs */}
-      <div className="flex flex-col sm:flex-row gap-3 animate-fade-up delay-300">
+      <div className="flex flex-col sm:flex-row gap-3 animate-fade-up delay-300 w-full max-w-md sm:max-w-none sm:w-auto justify-center">
         <Link
           to="/app"
           className="inline-flex items-center justify-center gap-2.5 px-8 py-4 bg-[#111] text-white font-semibold rounded-full hover:bg-[#333] transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98] text-base"
@@ -102,10 +109,9 @@ export default function Hero() {
         </Link>
       </div>
 
-      {/* Live color cycle pill */}
-      <div className="animate-fade-in delay-400 flex flex-col items-center gap-6">
+      <div className="animate-fade-in delay-400 flex flex-col items-center gap-5 w-full">
         <ColorCyclePill />
-        <TrustPills className="animate-fade-in delay-500 max-w-xl" />
+        <TrustPills className="delay-500 max-w-lg px-2" />
       </div>
     </section>
   )
