@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { CameraIcon, UploadIcon } from '../ui/Icons'
 import ColorCyclePill from './ColorCyclePill'
+import TrustPills from './TrustPills'
 
 const LINE1_CHARS = 'Identify any '.split('')
 const LINE2_CHARS = 'around you — instantly.'.split('')
@@ -32,7 +33,7 @@ export default function Hero() {
   }, [])
 
   return (
-    <section className="flex flex-col items-center justify-center text-center px-6 pt-16 pb-20 gap-10 overflow-hidden">
+    <section className="flex flex-col items-center justify-center text-center px-6 pt-20 md:pt-28 pb-16 md:pb-24 gap-10 md:gap-12 overflow-hidden">
 
       {/* Logo with spinning rainbow ring */}
       <div className="relative animate-scale-in flex items-center justify-center">
@@ -102,13 +103,10 @@ export default function Hero() {
       </div>
 
       {/* Live color cycle pill */}
-      <div className="animate-fade-in delay-400">
+      <div className="animate-fade-in delay-400 flex flex-col items-center gap-6">
         <ColorCyclePill />
+        <TrustPills className="animate-fade-in delay-500 max-w-xl" />
       </div>
-
-      <p className="text-sm text-gray-400 animate-fade-in delay-600 font-light">
-        100% private · All processing on-device · Free forever
-      </p>
     </section>
   )
 }

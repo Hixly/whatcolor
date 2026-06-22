@@ -6,6 +6,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['"Outfit"', 'system-ui', '-apple-system', 'sans-serif'],
+        serif: ['"Instrument Serif"', 'Georgia', 'Cambria', 'serif'],
       },
       colors: {
         brand: {
