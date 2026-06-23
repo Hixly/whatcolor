@@ -3,19 +3,43 @@ import { Link } from 'react-router-dom'
 import { CameraIcon, UploadIcon } from '../ui/Icons'
 import ColorCyclePill from './ColorCyclePill'
 import TrustPills from './TrustPills'
+import LogoLockup from './LogoLockup'
 
-const LINE1_CHARS = 'Identify any '.split('')
-const LINE2_CHARS = 'around you — instantly.'.split('')
-const COLOR_OFFSET = LINE1_CHARS.length
-const LINE2_OFFSET = COLOR_OFFSET + 'color'.length
+const STEP = 35
 
-function WaveChar({ char, delay }) {
+/** Render a word as non-breaking, with each letter waving in sequence. */
+function WaveWord({ word, startIndex, className = '' }) {
   return (
-    <span className="inline-block animate-wave" style={{ animationDelay: `${delay}ms` }}>
-      {char === ' ' ? '\u00a0' : char}
+    <span className={`inline-flex whitespace-nowrap ${className}`}>
+      {word.split('').map((char, i) => (
+        <span
+          key={i}
+          className="inline-block animate-wave"
+          style={{ animationDelay: `${(startIndex + i) * STEP}ms` }}
+        >
+          {char}
+        </span>
+      ))}
     </span>
   )
 }
+
+// [word, isColor] — color word gets the shimmer treatment.
+const LINE1 = [['Identify', false], ['any', false], ['color', true]]
+const LINE2 = [['around', false], ['you', false], ['—', false], ['instantly.', false]]
+
+// Continuous letter index so the wave flows across the whole headline.
+function withDelays(words, offset) {
+  let idx = offset
+  return words.map(([word, isColor]) => {
+    const start = idx
+    idx += word.length + 1 // +1 keeps a beat for the space between words
+    return { word, isColor, start }
+  })
+}
+
+const LINE1_WORDS = withDelays(LINE1, 0)
+const LINE2_WORDS = withDelays(LINE2, LINE1_WORDS.at(-1).start + 'color'.length + 1)
 
 export default function Hero() {
   const headlineRef = useRef(null)
@@ -40,50 +64,28 @@ export default function Hero() {
   return (
     <section className="flex flex-col items-center justify-center text-center px-6 pt-16 pb-20 gap-10 overflow-hidden">
 
-      <div className="relative animate-fade-in flex items-center justify-center">
-        <div
-          className="absolute rounded-full animate-spin-slow"
-          style={{
-            width: 220,
-            height: 220,
-            background: 'conic-gradient(from 0deg, #FF3B30, #FF9500, #FFD60A, #30D158, #0A84FF, #BF5AF2, #FF3B30)',
-            WebkitMask: 'radial-gradient(circle, transparent 71%, black 71%)',
-            mask: 'radial-gradient(circle, transparent 71%, black 71%)',
-            opacity: 0.35,
-          }}
-        />
-        <img
-          src="/logo-lockup-transparent.png"
-          srcSet="/logo-lockup-transparent.png 1x, /logo-lockup-transparent@2x.png 2x"
-          alt="WhatColor — See More. Know More."
-          className="relative w-64 sm:w-72 md:w-96 h-auto select-none"
-          width={384}
-          height={120}
-          decoding="sync"
-          fetchPriority="high"
-          draggable={false}
-        />
+      <div className="animate-fade-in">
+        <LogoLockup />
       </div>
 
-      <div ref={headlineRef} className="w-full max-w-2xl animate-fade-up delay-200">
+      <div ref={headlineRef} className="w-full max-w-3xl animate-fade-up delay-200">
         <h1
           key={waveKey}
           className="text-[2rem] leading-[1.15] sm:text-4xl md:text-6xl font-bold text-gray-900 tracking-tight mb-5 mx-auto"
         >
-          <span className="flex flex-wrap justify-center gap-x-[0.2em]">
-            {LINE1_CHARS.map((char, i) => (
-              <WaveChar key={`l1-${i}`} char={char} delay={i * 35} />
+          <span className="flex flex-wrap justify-center gap-x-[0.28em] gap-y-1">
+            {LINE1_WORDS.map(({ word, isColor, start }) => (
+              <WaveWord
+                key={word}
+                word={word}
+                startIndex={start}
+                className={isColor ? 'shimmer-text animate-shimmer' : ''}
+              />
             ))}
-            <span
-              className="shimmer-text animate-shimmer inline-block animate-wave"
-              style={{ animationDelay: `${COLOR_OFFSET * 35}ms` }}
-            >
-              color
-            </span>
           </span>
-          <span className="mt-1 flex flex-wrap justify-center gap-x-[0.2em] font-light text-gray-400">
-            {LINE2_CHARS.map((char, i) => (
-              <WaveChar key={`l2-${i}`} char={char} delay={(LINE2_OFFSET + i) * 35} />
+          <span className="mt-1 flex flex-wrap justify-center gap-x-[0.28em] gap-y-1 font-light text-gray-400">
+            {LINE2_WORDS.map(({ word, start }) => (
+              <WaveWord key={word} word={word} startIndex={start} />
             ))}
           </span>
         </h1>
