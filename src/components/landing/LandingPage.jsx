@@ -18,6 +18,20 @@ export default function LandingPage() {
   return (
     <div className="relative min-h-screen bg-white">
       <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+        {/* Continuous pastel wash so there are no bare white gaps between orbs */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `
+              radial-gradient(70% 60% at 12% 8%,  rgba(255, 59, 48, 0.10), transparent 60%),
+              radial-gradient(65% 55% at 88% 4%,  rgba(10, 132, 255, 0.10), transparent 60%),
+              radial-gradient(65% 60% at 82% 46%, rgba(255, 214, 10, 0.10), transparent 62%),
+              radial-gradient(65% 60% at 8% 56%,  rgba(48, 209, 88, 0.10), transparent 62%),
+              radial-gradient(80% 65% at 50% 100%, rgba(191, 90, 242, 0.10), transparent 60%),
+              radial-gradient(60% 55% at 30% 30%, rgba(255, 149, 0, 0.07), transparent 65%)
+            `,
+          }}
+        />
         {ORBS.map((orb, i) => (
           <div
             key={i}

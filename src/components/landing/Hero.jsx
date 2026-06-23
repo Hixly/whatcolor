@@ -7,9 +7,9 @@ import TrustPills from './TrustPills'
 const STEP = 35
 
 /** Render a word as non-breaking, with each letter waving in sequence. */
-function WaveWord({ word, startIndex, className = '' }) {
+function WaveWord({ word, startIndex }) {
   return (
-    <span className={`inline-flex whitespace-nowrap ${className}`}>
+    <span className="inline-flex whitespace-nowrap">
       {word.split('').map((char, i) => (
         <span
           key={i}
@@ -19,6 +19,21 @@ function WaveWord({ word, startIndex, className = '' }) {
           {char}
         </span>
       ))}
+    </span>
+  )
+}
+
+/**
+ * The rainbow word must stay a single text node so `background-clip: text`
+ * paints across it — splitting it into per-letter inline-blocks breaks the clip.
+ */
+function ShimmerWord({ word, startIndex }) {
+  return (
+    <span
+      className="shimmer-text animate-shimmer inline-block animate-wave whitespace-nowrap"
+      style={{ animationDelay: `${startIndex * STEP}ms` }}
+    >
+      {word}
     </span>
   )
 }
@@ -82,14 +97,13 @@ export default function Hero() {
           className="text-[2rem] leading-[1.15] sm:text-4xl md:text-6xl font-bold text-gray-900 tracking-tight mb-5 mx-auto"
         >
           <span className="flex flex-wrap justify-center gap-x-[0.28em] gap-y-1">
-            {LINE1_WORDS.map(({ word, isColor, start }) => (
-              <WaveWord
-                key={word}
-                word={word}
-                startIndex={start}
-                className={isColor ? 'shimmer-text animate-shimmer' : ''}
-              />
-            ))}
+            {LINE1_WORDS.map(({ word, isColor, start }) =>
+              isColor ? (
+                <ShimmerWord key={word} word={word} startIndex={start} />
+              ) : (
+                <WaveWord key={word} word={word} startIndex={start} />
+              ),
+            )}
           </span>
           <span className="mt-1 flex flex-wrap justify-center gap-x-[0.28em] gap-y-1 font-light text-gray-400">
             {LINE2_WORDS.map(({ word, start }) => (
