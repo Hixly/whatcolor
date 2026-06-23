@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { CameraIcon, UploadIcon } from '../ui/Icons'
 import ColorCyclePill from './ColorCyclePill'
 import TrustPills from './TrustPills'
-import LogoLockup from './LogoLockup'
 
 const STEP = 35
 
@@ -64,8 +63,17 @@ export default function Hero() {
   return (
     <section className="flex flex-col items-center justify-center text-center px-6 pt-16 pb-20 gap-10 overflow-hidden">
 
-      <div className="animate-fade-in">
-        <LogoLockup />
+      <div className="animate-fade-in flex items-center justify-center">
+        <img
+          src="/logo-lockup-transparent.png"
+          alt="WhatColor — See More. Know More."
+          className="w-72 sm:w-80 md:w-96 h-auto select-none"
+          width={384}
+          height={297}
+          decoding="sync"
+          fetchPriority="high"
+          draggable={false}
+        />
       </div>
 
       <div ref={headlineRef} className="w-full max-w-3xl animate-fade-up delay-200">
