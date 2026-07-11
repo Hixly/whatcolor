@@ -4,6 +4,8 @@
 
 **Live:** [what-color.com](https://what-color.com)
 
+![WhatColor landing page](.github/screenshot.png)
+
 I built WhatColor because color-naming should be a phone-camera-and-a-second moment, not a 4-step app workflow. Open the site, point, hear the name. That's it.
 
 ## How it works
