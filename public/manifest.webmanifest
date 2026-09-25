@@ -1,7 +1,7 @@
 {
-  "name": "WhatColor — See More. Know More.",
+  "name": "WhatColor: name any color",
   "short_name": "WhatColor",
-  "description": "Identify any color around you, instantly. A camera-based color identifier built for people with color vision deficiency.",
+  "description": "Point your camera and know the color in words you actually use. Built for people with color vision deficiency.",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",

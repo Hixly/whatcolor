@@ -24,7 +24,8 @@ export default function FinalCTA() {
             See color clearly.
           </h2>
           <p className="text-white/60 text-base md:text-lg font-light mt-4 max-w-md mx-auto leading-relaxed">
-            Free, private, and on-device. Start identifying colors in seconds — no account needed.
+            Free, private, and on your device. No account, no ads. Point your camera and know the color in
+            a second.
           </p>
 
           <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center">
@@ -40,7 +41,7 @@ export default function FinalCTA() {
               className="group/up inline-flex items-center justify-center gap-2.5 px-8 py-4 bg-white/[0.08] text-white font-semibold rounded-full border border-white/15 hover:bg-white/[0.14] hover:-translate-y-0.5 transition-all duration-200 ease-spring active:scale-[0.97] text-base"
             >
               <UploadIcon size={18} className="transition-transform duration-300 ease-spring group-hover/up:-translate-y-0.5" />
-              Upload an Image
+              Use a Photo
             </Link>
           </div>
         </div>

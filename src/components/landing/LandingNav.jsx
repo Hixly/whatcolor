@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom'
 import { CameraIcon } from '../ui/Icons'
 
 const TABS = [
-  { label: 'How It Works', href: '#how-it-works' },
-  { label: 'Features',     href: '#features'     },
+  { label: 'Try it',       href: '#try' },
+  { label: 'How it works', href: '#how-it-works', wide: true },
+  { label: 'Features',     href: '#features' },
 ]
 
 function scrollTo(id) {
@@ -32,11 +33,11 @@ export default function LandingNav() {
         }`}
       >
         {/* Tab links — springy pill hover */}
-        {TABS.map(({ label, href }) => (
+        {TABS.map(({ label, href, wide }) => (
           <button
             key={href}
             onClick={() => scrollTo(href.slice(1))}
-            className="px-4 py-1.5 rounded-full text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-black/[0.06] transition-all duration-200 ease-spring active:scale-95 whitespace-nowrap"
+            className={`${wide ? 'hidden sm:block' : ''} px-3.5 sm:px-4 py-1.5 rounded-full text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-black/[0.06] transition-all duration-200 ease-spring active:scale-95 whitespace-nowrap`}
           >
             {label}
           </button>

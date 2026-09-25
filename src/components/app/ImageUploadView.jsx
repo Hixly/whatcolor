@@ -19,6 +19,8 @@ export default function ImageUploadView({ onSave, onBack, onColorChange }) {
   const [aim, setAim] = useState(null) // { x, y, spotPx } in container pixels
   const [dragging, setDragging] = useState(false)
   const [panelCollapsed, setPanelCollapsed] = useState(false)
+  // Phones get the compact card so the photo stays tappable; details on demand.
+  const [expanded, setExpanded] = useState(false)
   const [sampler] = useState(createSampler)
   const imgRef = useRef(null)
   const stageRef = useRef(null)
@@ -171,7 +173,7 @@ export default function ImageUploadView({ onSave, onBack, onColorChange }) {
           style={{ transform: panelCollapsed ? 'translateY(120%)' : 'translateY(0)' }}
         >
           <div
-            className="p-4 pt-2 backdrop-blur-xl rounded-2xl border border-white/[0.09] transition-[background] duration-500 ease-out raised-dark max-h-[55vh] overflow-y-auto"
+            className={`${expanded ? 'p-4' : 'p-0'} pt-2 backdrop-blur-xl rounded-2xl border border-white/[0.09] transition-[background] duration-500 ease-out raised-dark max-h-[60vh] overflow-y-auto`}
             style={{
               background: color
                 ? `linear-gradient(180deg, ${color.hex}1f 0%, rgba(17,17,17,0.94) 60%)`
@@ -188,7 +190,7 @@ export default function ImageUploadView({ onSave, onBack, onColorChange }) {
             </button>
 
             {!color ? (
-              <div className="flex items-center gap-3 py-1">
+              <div className="flex items-center gap-3 px-4 pt-1 pb-3.5">
                 <div className="w-[52px] h-[52px] rounded-[15px] shrink-0 bg-white/[0.06] border border-white/[0.08] flex items-center justify-center">
                   <ImageIcon size={22} className="text-white/40" />
                 </div>
@@ -198,7 +200,21 @@ export default function ImageUploadView({ onSave, onBack, onColorChange }) {
                 </div>
               </div>
             ) : (
-              <ColorInfoPanel color={color} onSave={onSave} dark />
+              expanded ? (
+                <>
+                  <ColorInfoPanel color={color} onSave={onSave} dark />
+                  <button
+                    onClick={() => setExpanded(false)}
+                    className="mt-3 w-full py-2 text-xs font-semibold text-white/45 hover:text-white/75 transition-colors"
+                  >
+                    Show less
+                  </button>
+                </>
+              ) : (
+                <button className="w-full text-left" onClick={() => setExpanded(true)} aria-label="Open color details">
+                  <ColorInfoPanel color={color} onSave={onSave} dark compact />
+                </button>
+              )
             )}
           </div>
         </div>

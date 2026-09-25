@@ -1,13 +1,9 @@
 import { useState, useEffect } from 'react'
 
-const COLORS = [
-  { name: 'Crimson Red',  hex: '#FF3B30' },
-  { name: 'Ocean Blue',   hex: '#0A84FF' },
-  { name: 'Golden Hour',  hex: '#FFD60A' },
-  { name: 'Sage Green',   hex: '#30D158' },
-  { name: 'Royal Purple', hex: '#BF5AF2' },
-  { name: 'Sunflower',    hex: '#FF9500' },
-]
+import { HERO_CYCLE } from './demoColors'
+
+// Real engine output for real-world things, not hand-picked names.
+const COLORS = HERO_CYCLE.map((c) => ({ name: c.result.name, hex: c.hex, thing: c.thing }))
 
 export default function ColorCyclePill() {
   const [index, setIndex]       = useState(0)
@@ -51,7 +47,7 @@ export default function ColorCyclePill() {
       />
 
       {/* Slot-machine text roll */}
-      <div className="relative overflow-hidden" style={{ height: '1.75rem', minWidth: '172px' }}>
+      <div className="relative overflow-hidden" style={{ height: '1.75rem', minWidth: '236px' }}>
         {/* Exiting row */}
         {prev && (
           <div
@@ -59,7 +55,7 @@ export default function ColorCyclePill() {
             style={{ animation: 'pillExit 0.32s ease-in both' }}
           >
             <span className="text-base font-semibold text-gray-800 whitespace-nowrap">{prev.name}</span>
-            <span className="font-mono text-sm text-gray-400 whitespace-nowrap">{prev.hex}</span>
+            <span className="text-sm text-gray-400 whitespace-nowrap">{prev.thing}</span>
           </div>
         )}
 
@@ -70,7 +66,7 @@ export default function ColorCyclePill() {
           style={{ animation: 'pillEnter 0.42s cubic-bezier(0.22,1,0.36,1) both' }}
         >
           <span className="text-base font-semibold text-gray-800 whitespace-nowrap">{current.name}</span>
-          <span className="font-mono text-sm text-gray-400 whitespace-nowrap">{current.hex}</span>
+          <span className="text-sm text-gray-400 whitespace-nowrap">{current.thing}</span>
         </div>
       </div>
     </div>

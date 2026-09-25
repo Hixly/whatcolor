@@ -5,7 +5,7 @@ import ColorCyclePill from './ColorCyclePill'
 
 const LINE1_WORDS = ['Identify', 'any']
 const COLOR_WORD  = 'color'
-const LINE2_WORDS = ['around', 'you', '—', 'instantly.']
+const LINE2_WORDS = ['in', 'words', 'you', 'actually', 'use.']
 
 function wordOffsets(words, start = 0) {
   const offsets = []
@@ -96,14 +96,24 @@ export default function Hero() {
         <img
           src="/logo-lockup-transparent.png"
           srcSet="/logo-lockup-transparent.png 1x, /logo-lockup-transparent@2x.png 2x"
-          alt="WhatColor — See More. Know More."
+          alt="WhatColor. See more. Know more."
           className="relative w-[46rem] md:w-[42rem] h-auto select-none"
           draggable={false}
         />
       </div>
 
-      {/* Headline — scroll-in wave via h1 key, per-letter hover/swipe via WaveLetter */}
-      <div ref={headlineRef} className="max-w-2xl animate-fade-up delay-200">
+      {/* Headline: scroll-in wave via h1 key, per-letter hover/swipe via WaveLetter */}
+      <div ref={headlineRef} className="max-w-3xl animate-fade-up delay-200">
+        <a
+          href="#engine"
+          onClick={(e) => { e.preventDefault(); document.getElementById('engine')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }}
+          className="group/new inline-flex items-center gap-2 mb-6 pl-1.5 pr-3.5 py-1.5 rounded-full glass-light text-[13px] font-medium text-gray-700 hover:text-gray-900 transition-all duration-200 ease-spring hover:-translate-y-0.5"
+        >
+          <span className="px-2 py-0.5 rounded-full text-[11px] font-bold text-white" style={{ background: 'linear-gradient(90deg, #FF3B30, #FF9500, #30D158, #0A84FF, #BF5AF2)' }}>NEW</span>
+          <span className="sm:hidden">Rebuilt color engine</span>
+          <span className="hidden sm:inline">A rebuilt engine that names colors like a person</span>
+          <span className="text-gray-400 transition-transform duration-200 group-hover/new:translate-x-0.5">›</span>
+        </a>
         <h1
           key={waveKey}
           className="text-4xl md:text-6xl font-bold text-gray-900 leading-[1.2] tracking-tight mb-5 cursor-default select-none"
@@ -125,10 +135,8 @@ export default function Hero() {
             <span className="shimmer-text animate-shimmer">{COLOR_WORD}</span>
           </span>
 
-          <br className="hidden md:block" />
-          {' '}
-
-          <span className="font-light" style={{ color: '#9ca3af' }}>
+          {/* Line two always starts on its own line, balanced so no word is orphaned */}
+          <span className="block font-light [text-wrap:balance]" style={{ color: '#9ca3af' }}>
             {LINE2_WORDS.map((word, wi) => (
               <span key={wi}>
                 <span className="inline-block whitespace-nowrap">
@@ -143,7 +151,8 @@ export default function Hero() {
         </h1>
 
         <p className="text-gray-500 text-lg md:text-xl leading-relaxed font-light max-w-lg mx-auto">
-          Built for people with color vision deficiency. Your daily companion for seeing the world more clearly.
+          Point your camera and WhatColor names it the way a friend would: navy, olive, dusty rose.
+          Built by a colorblind developer, for anyone who sees color a little differently.
         </p>
       </div>
 
@@ -161,7 +170,7 @@ export default function Hero() {
           className="group/cta inline-flex items-center justify-center gap-2.5 px-8 py-4 bg-white text-gray-800 font-semibold rounded-full border border-gray-200 raised-light hover:border-gray-300 hover:-translate-y-0.5 transition-all duration-200 ease-spring active:scale-[0.97] active:duration-75 text-base select-none"
         >
           <UploadIcon size={18} className="transition-transform duration-300 ease-spring group-hover/cta:-translate-y-0.5" />
-          Upload an Image
+          Use a Photo
         </Link>
       </div>
 

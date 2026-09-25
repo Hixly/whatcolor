@@ -1,6 +1,6 @@
-// WhatColor service worker — app-shell offline support.
+// WhatColor service worker: app-shell offline support.
 // Bump CACHE_VERSION to invalidate old caches on deploy.
-const CACHE_VERSION = 'wc-v1'
+const CACHE_VERSION = 'wc-v2'
 const PRECACHE = [
   '/',
   '/manifest.webmanifest',
@@ -27,10 +27,19 @@ self.addEventListener('fetch', (event) => {
   const { request } = event
   if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return
 
-  // Navigations: network-first so users get fresh HTML, fall back to cached shell offline.
+  // Navigations: network-first so users get fresh HTML. Each good response
+  // refreshes the cached shell, so the offline copy never goes stale.
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request).catch(() => caches.match('/'))
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone()
+            caches.open(CACHE_VERSION).then((cache) => cache.put('/', copy))
+          }
+          return response
+        })
+        .catch(() => caches.match('/'))
     )
     return
   }

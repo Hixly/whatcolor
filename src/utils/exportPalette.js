@@ -1,5 +1,5 @@
 // Render the saved color history into a shareable PNG swatch sheet and trigger
-// a download. Pure canvas — no dependencies.
+// a download. Pure canvas, no dependencies.
 export function exportPalettePng(history) {
   if (!history || history.length === 0) return
 

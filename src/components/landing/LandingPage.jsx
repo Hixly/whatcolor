@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import Hero from './Hero'
-import ProductShowcase from './ProductShowcase'
+import TryItDemo from './TryItDemo'
+import EngineUpgrade from './EngineUpgrade'
 import FounderNote from './FounderNote'
 import HowItWorks from './HowItWorks'
 import Features from './Features'
@@ -10,8 +11,8 @@ import InstallPrompt from './InstallPrompt'
 import { SOCIALS } from '../../socials'
 
 // Soft, vibrant color washes that slowly drift behind the page. Blur and opacity
-// are STATIC (only the transform animates), so they always render as a soft glow
-// — never hard circles.
+// are static (only the transform animates), so they always render as a soft
+// glow, never hard circles.
 const ORBS = [
   { color: '#FF3B30', left: '-12%', top: '12%',  size: 460, opacity: 0.55, dur: '9s',  delay: '0s'   },
   { color: '#0A84FF', left: '62%',  top: '6%',   size: 440, opacity: 0.5,  dur: '11s', delay: '0.8s' },
@@ -56,7 +57,11 @@ export default function LandingPage() {
 
         <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mx-8" />
 
-        <ProductShowcase />
+        <TryItDemo />
+
+        <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mx-8" />
+
+        <EngineUpgrade />
 
         <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mx-8" />
 
@@ -77,7 +82,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-3">
               <img src="/logo-symbol-transparent.png" alt="" className="h-7 w-7 object-contain" />
               <span className="text-sm font-semibold text-gray-900">WhatColor</span>
-              <span className="text-sm text-gray-400 font-light">— See More. Know More.</span>
+              <span className="text-sm text-gray-400 font-light">See more. Know more.</span>
             </div>
             <div className="flex items-center gap-4">
               {/* Social */}

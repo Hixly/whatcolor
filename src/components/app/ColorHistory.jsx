@@ -22,7 +22,10 @@ function HistoryEntry({ entry, onRemove, onLabelChange }) {
       />
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-white text-sm truncate">{entry.name}</p>
-        <p className="font-mono text-[11px] text-white/30">{entry.hex}</p>
+        <p className="text-[11px] text-white/35 truncate">
+          {entry.family && <span className="text-white/55">{entry.family} · </span>}
+          <span className="font-mono">{entry.hex}</span>
+        </p>
         {editing ? (
           <div className="flex gap-2 mt-1.5">
             <input
@@ -52,7 +55,7 @@ function HistoryEntry({ entry, onRemove, onLabelChange }) {
       </div>
       <button
         onClick={() => onRemove(entry.id)}
-        className="p-1.5 text-white/10 hover:text-brand-red transition-colors opacity-0 group-hover:opacity-100 shrink-0"
+        className="p-1.5 text-white/25 hover:text-brand-red transition-colors lg:opacity-0 lg:group-hover:opacity-100 focus:opacity-100 shrink-0"
         aria-label={`Remove ${entry.name}`}
       >
         <XIcon size={13} />
@@ -70,7 +73,7 @@ export default function ColorHistory({ history, onRemove, onLabelChange, onClear
         <button onClick={onBack} aria-label="Back" className="group/back w-8 h-8 rounded-full bg-white/5 border border-white/[0.06] flex items-center justify-center hover:bg-white/10 transition-all duration-200 ease-spring active:scale-90">
           <ArrowLeftIcon size={15} className="text-white/60 transition-transform duration-300 ease-spring group-hover/back:-translate-x-0.5" />
         </button>
-        <h2 className="font-bold text-white flex-1 tracking-tight">Color History</h2>
+        <h2 className="font-bold text-white flex-1 tracking-tight">Saved colors</h2>
         {history.length > 0 && (
           <span className="text-xs bg-white/10 text-white/60 px-2 py-0.5 rounded-full tabular-nums">{history.length}</span>
         )}
@@ -83,7 +86,7 @@ export default function ColorHistory({ history, onRemove, onLabelChange, onClear
               <PaletteIcon size={22} className="text-white/20" />
             </div>
             <p className="text-white/30 text-sm font-light max-w-[180px]">
-              No saved colors yet. Tap Save while detecting a color.
+              Nothing saved yet. Tap the bookmark on any reading to keep it here.
             </p>
           </div>
         ) : (
@@ -113,7 +116,7 @@ export default function ColorHistory({ history, onRemove, onLabelChange, onClear
                 onClick={() => { onClearAll(); setConfirmClear(false) }}
                 className="flex-1 py-2 bg-brand-red/20 text-brand-red text-xs font-semibold rounded-full hover:bg-brand-red/30 transition-all duration-200 ease-spring active:scale-[0.97]"
               >
-                Confirm Clear
+                Yes, clear all
               </button>
               <button
                 onClick={() => setConfirmClear(false)}
@@ -127,7 +130,7 @@ export default function ColorHistory({ history, onRemove, onLabelChange, onClear
               onClick={() => setConfirmClear(true)}
               className="ml-auto px-4 py-2 text-white/30 text-xs font-semibold hover:text-white/60 transition-colors rounded-full"
             >
-              Clear All
+              Clear all
             </button>
           )}
         </div>

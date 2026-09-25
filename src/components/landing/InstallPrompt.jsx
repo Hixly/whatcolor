@@ -14,14 +14,19 @@ function isIOS() {
   return /iphone|ipad|ipod/i.test(window.navigator.userAgent) && !window.MSStream
 }
 
+function wasDismissed() {
+  try { return !!localStorage.getItem(DISMISS_KEY) } catch { return false }
+}
+
 export default function InstallPrompt() {
   const [deferred, setDeferred] = useState(null) // Android/Chromium beforeinstallprompt event
-  const [visible, setVisible] = useState(false)
-  const [iosHint, setIosHint] = useState(false)
+  // iOS Safari has no install event, so it gets manual Add-to-Home-Screen
+  // instructions, decided once up front.
+  const [iosHint] = useState(() => isIOS() && !isStandalone() && !wasDismissed())
+  const [visible, setVisible] = useState(iosHint)
 
   useEffect(() => {
-    if (isStandalone()) return
-    try { if (localStorage.getItem(DISMISS_KEY)) return } catch { /* ignore */ }
+    if (isStandalone() || wasDismissed()) return
 
     // Android / desktop Chromium: capture the install event and show our own button.
     const onBeforeInstall = (e) => {
@@ -30,12 +35,6 @@ export default function InstallPrompt() {
       setVisible(true)
     }
     window.addEventListener('beforeinstallprompt', onBeforeInstall)
-
-    // iOS Safari has no install event — show manual Add-to-Home-Screen instructions.
-    if (isIOS()) {
-      setIosHint(true)
-      setVisible(true)
-    }
 
     const onInstalled = () => setVisible(false)
     window.addEventListener('appinstalled', onInstalled)
@@ -79,7 +78,7 @@ export default function InstallPrompt() {
           ) : (
             <>
               <p className="text-sm font-semibold text-gray-900 leading-tight">Install WhatColor</p>
-              <p className="text-[12px] text-gray-500 font-light leading-snug mt-0.5">Add it to your home screen — opens like a real app.</p>
+              <p className="text-[12px] text-gray-500 font-light leading-snug mt-0.5">Add it to your home screen. It opens like a real app.</p>
             </>
           )}
         </div>
