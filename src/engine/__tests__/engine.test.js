@@ -58,6 +58,19 @@ describe('plain-language descriptions', () => {
   it('describes the lean between hues', () => {
     expect(id('#b5cc35').description).toMatch(/yellowish green/)
   })
+  it('never doubles up a hue word', () => {
+    const leans = { red: 'reddish', orange: 'orange-ish', yellow: 'yellowish', green: 'greenish', blue: 'bluish', purple: 'purplish', pink: 'pinkish', brown: 'brownish' }
+    for (const e of PALETTE) {
+      const d = id(e.hex).description.toLowerCase()
+      for (const [hue, lean] of Object.entries(leans)) {
+        expect(d.includes(`${lean} ${hue}`)).toBe(false)
+      }
+    }
+  })
+  it('calls dark red-pinks purplish, not pinkish', () => {
+    expect(id('#6e192a').description).toBe('Deep purplish red')
+    expect(id('#5e2350').description).not.toMatch(/purplish purple/)
+  })
   it('describes tinted grays', () => {
     expect(id('#6f8393').description).toBe('Medium gray with a blue tint')
   })

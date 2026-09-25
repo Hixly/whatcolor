@@ -54,7 +54,7 @@ function leanFor(family, h, L) {
   if (Math.abs(d) < gap * 0.38) return null
   if (neighbor === 'teal') return family === 'green' ? 'bluish' : 'greenish'
   // Dark reds leaning toward pink read as berry/wine, i.e. purplish.
-  if (neighbor === 'pink' && L < 0.5) return 'purplish'
+  if (family === 'red' && neighbor === 'pink' && L < 0.5) return 'purplish'
   return LEAN_WORD[neighbor]
 }
 
