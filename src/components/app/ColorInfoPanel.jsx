@@ -133,7 +133,9 @@ export default function ColorInfoPanel({ color, onSave, dark = false, compact = 
             }}
             aria-hidden="true"
           />
-          <div className="flex-1 min-w-0" aria-live="polite">
+          {/* Screen readers hear the name and family when they change, not every hex flicker */}
+          <span className="sr-only" aria-live="polite">{color ? `${color.name}, ${color.family}` : ''}</span>
+          <div className="flex-1 min-w-0" data-testid="live-card" aria-hidden="true">
             {color ? (
               <>
                 <p className="font-semibold text-white text-[20px] leading-tight truncate">{color.name}</p>

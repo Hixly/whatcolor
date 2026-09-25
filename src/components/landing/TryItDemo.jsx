@@ -181,7 +181,9 @@ export default function TryItDemo() {
                 background: `linear-gradient(180deg, ${shown[active].hex}26 0%, rgba(15,15,15,0.93) 62%)`,
                 transition: 'background 0.5s ease',
               }}
-              aria-live="polite"
+              data-testid="demo-card"
+              // Quiet during the idle tour; announce once a visitor takes over.
+              aria-live={touring ? 'off' : 'polite'}
             >
               <div className="flex items-center gap-3.5">
                 <div
