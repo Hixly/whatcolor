@@ -1,53 +1,54 @@
 import { Link } from 'react-router-dom'
 import Hero from './Hero'
-import AppShowcase from './AppShowcase'
-import FounderStory from './FounderStory'
+import ProductShowcase from './ProductShowcase'
+import FounderNote from './FounderNote'
 import HowItWorks from './HowItWorks'
 import Features from './Features'
+import FinalCTA from './FinalCTA'
+import LandingNav from './LandingNav'
+import InstallPrompt from './InstallPrompt'
+import { SOCIALS } from '../../socials'
 
+// Soft, vibrant color washes that slowly drift behind the page. Blur and opacity
+// are STATIC (only the transform animates), so they always render as a soft glow
+// — never hard circles.
 const ORBS = [
-  { color: '#FF3B30', left: '-8%',  top: '2%',   size: 480, floatDur: '4s',  colorDur: '5s',  floatDelay: '0s',    colorDelay: '0s'   },
-  { color: '#0A84FF', left: '68%',  top: '-2%',  size: 420, floatDur: '5s',  colorDur: '7s',  floatDelay: '0.5s',  colorDelay: '2s'   },
-  { color: '#30D158', left: '-4%',  top: '45%',  size: 380, floatDur: '3.5s',colorDur: '6s',  floatDelay: '1s',    colorDelay: '1s'   },
-  { color: '#FFD60A', left: '75%',  top: '40%',  size: 340, floatDur: '4.5s',colorDur: '8s',  floatDelay: '1.5s',  colorDelay: '3s'   },
-  { color: '#BF5AF2', left: '35%',  top: '70%',  size: 300, floatDur: '3s',  colorDur: '5.5s',floatDelay: '2s',    colorDelay: '1.5s' },
-  { color: '#FF9500', left: '20%',  top: '5%',   size: 280, floatDur: '5.5s',colorDur: '9s',  floatDelay: '0.8s',  colorDelay: '4s'   },
+  { color: '#FF3B30', left: '-12%', top: '12%',  size: 460, opacity: 0.55, dur: '9s',  delay: '0s'   },
+  { color: '#0A84FF', left: '62%',  top: '6%',   size: 440, opacity: 0.5,  dur: '11s', delay: '0.8s' },
+  { color: '#30D158', left: '-8%',  top: '46%',  size: 420, opacity: 0.5,  dur: '8s',  delay: '0.4s' },
+  { color: '#FFD60A', left: '70%',  top: '42%',  size: 380, opacity: 0.55, dur: '10s', delay: '1.4s' },
+  { color: '#BF5AF2', left: '34%',  top: '66%',  size: 360, opacity: 0.5,  dur: '9.5s', delay: '1.1s' },
+  { color: '#FF9500', left: '24%',  top: '20%',  size: 320, opacity: 0.5,  dur: '12s', delay: '0.6s' },
 ]
 
 export default function LandingPage() {
   return (
     <div className="relative min-h-screen bg-white">
+      <LandingNav />
+      <InstallPrompt />
+
+      {/* Animated color-wash background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
-        {/* Continuous pastel wash so there are no bare white gaps between orbs */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `
-              radial-gradient(70% 60% at 12% 8%,  rgba(255, 59, 48, 0.10), transparent 60%),
-              radial-gradient(65% 55% at 88% 4%,  rgba(10, 132, 255, 0.10), transparent 60%),
-              radial-gradient(65% 60% at 82% 46%, rgba(255, 214, 10, 0.10), transparent 62%),
-              radial-gradient(65% 60% at 8% 56%,  rgba(48, 209, 88, 0.10), transparent 62%),
-              radial-gradient(80% 65% at 50% 100%, rgba(191, 90, 242, 0.10), transparent 60%),
-              radial-gradient(60% 55% at 30% 30%, rgba(255, 149, 0, 0.07), transparent 65%)
-            `,
-          }}
-        />
         {ORBS.map((orb, i) => (
           <div
             key={i}
-            className="absolute rounded-full"
+            className="absolute rounded-full animate-float-orb"
             style={{
               backgroundColor: orb.color,
               left: orb.left,
               top: orb.top,
               width: orb.size,
               height: orb.size,
-              filter: 'blur(60px)',
-              opacity: 0.12,
-              animation: `floatOrb ${orb.floatDur} ease-in-out infinite ${orb.floatDelay}, orbColor ${orb.colorDur} ease-in-out infinite ${orb.colorDelay}`,
+              filter: 'blur(72px)',
+              opacity: orb.opacity,
+              animationDuration: orb.dur,
+              animationDelay: orb.delay,
+              willChange: 'transform',
             }}
           />
         ))}
+        {/* Keep the very top white so the browser/status bar doesn't tint to an orb color */}
+        <div className="absolute top-0 inset-x-0 h-28 bg-gradient-to-b from-white via-white/80 to-transparent" />
       </div>
 
       <div className="relative" style={{ zIndex: 1 }}>
@@ -55,11 +56,11 @@ export default function LandingPage() {
 
         <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mx-8" />
 
-        <AppShowcase />
+        <ProductShowcase />
 
         <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mx-8" />
 
-        <FounderStory />
+        <FounderNote />
 
         <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mx-8" />
 
@@ -69,16 +70,37 @@ export default function LandingPage() {
 
         <Features />
 
+        <FinalCTA />
+
         <footer className="border-t border-gray-100 px-6 py-10 bg-white/80 backdrop-blur-sm">
           <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-5">
             <div className="flex items-center gap-3">
               <img src="/logo-symbol-transparent.png" alt="" className="h-7 w-7 object-contain" />
-              <span className="text-sm font-semibold text-gray-900">WhatColor.io</span>
-              <span className="text-sm text-gray-400 font-light hidden sm:inline">— See More. Know More.</span>
+              <span className="text-sm font-semibold text-gray-900">WhatColor</span>
+              <span className="text-sm text-gray-400 font-light">— See More. Know More.</span>
             </div>
-            <div className="flex gap-6 text-sm text-gray-400 font-medium">
-              <Link to="/settings" className="hover:text-gray-900 transition-colors">Settings</Link>
-              <Link to="/app" className="hover:text-gray-900 transition-colors">Open App</Link>
+            <div className="flex items-center gap-4">
+              {/* Social */}
+              <div className="flex items-center gap-1.5">
+                {SOCIALS.map(({ label, href, Icon }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    title={label}
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-black/[0.05] transition-all duration-200 ease-spring active:scale-90"
+                  >
+                    <Icon size={17} />
+                  </a>
+                ))}
+              </div>
+              <div className="w-px h-4 bg-gray-200" />
+              <div className="flex gap-5 text-sm text-gray-400 font-medium">
+                <Link to="/settings" className="hover:text-gray-900 transition-colors">Settings</Link>
+                <Link to="/app" className="hover:text-gray-900 transition-colors">Open App</Link>
+              </div>
             </div>
           </div>
         </footer>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ArrowLeftIcon, DownloadIcon, PaletteIcon, XIcon, CheckIcon } from '../ui/Icons'
+import { ArrowLeftIcon, DownloadIcon, PaletteIcon, XIcon, CheckIcon, ImageIcon } from '../ui/Icons'
+import { exportPalettePng } from '../../utils/exportPalette'
 
 function HistoryEntry({ entry, onRemove, onLabelChange }) {
   const [editing, setEditing] = useState(false)
@@ -66,12 +67,12 @@ export default function ColorHistory({ history, onRemove, onLabelChange, onClear
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-3 px-5 py-4 border-b border-white/[0.06] shrink-0">
-        <button onClick={onBack} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all">
-          <ArrowLeftIcon size={15} className="text-white/60" />
+        <button onClick={onBack} aria-label="Back" className="group/back w-8 h-8 rounded-full bg-white/5 border border-white/[0.06] flex items-center justify-center hover:bg-white/10 transition-all duration-200 ease-spring active:scale-90">
+          <ArrowLeftIcon size={15} className="text-white/60 transition-transform duration-300 ease-spring group-hover/back:-translate-x-0.5" />
         </button>
-        <h2 className="font-bold text-white flex-1">Color History</h2>
+        <h2 className="font-bold text-white flex-1 tracking-tight">Color History</h2>
         {history.length > 0 && (
-          <span className="text-xs bg-white/10 text-white/50 px-2 py-0.5 rounded-full">{history.length}</span>
+          <span className="text-xs bg-white/10 text-white/60 px-2 py-0.5 rounded-full tabular-nums">{history.length}</span>
         )}
       </div>
 
@@ -95,22 +96,28 @@ export default function ColorHistory({ history, onRemove, onLabelChange, onClear
       {history.length > 0 && (
         <div className="flex gap-2 px-4 py-4 border-t border-white/[0.06] shrink-0">
           <button
-            onClick={onExport}
-            className="flex items-center gap-1.5 px-4 py-2 bg-white/5 text-white/60 text-xs font-semibold rounded-full hover:bg-white/10 transition-all"
+            onClick={() => exportPalettePng(history)}
+            className="group/png flex items-center gap-1.5 px-4 py-2 glass-dark text-white/75 text-xs font-semibold rounded-full hover:text-white transition-all duration-200 ease-spring active:scale-95"
           >
-            <DownloadIcon size={13} /> Export
+            <ImageIcon size={13} className="transition-transform duration-300 ease-spring group-hover/png:scale-110" /> PNG
+          </button>
+          <button
+            onClick={onExport}
+            className="group/exp flex items-center gap-1.5 px-4 py-2 glass-dark text-white/75 text-xs font-semibold rounded-full hover:text-white transition-all duration-200 ease-spring active:scale-95"
+          >
+            <DownloadIcon size={13} className="transition-transform duration-300 ease-spring group-hover/exp:translate-y-0.5" /> JSON
           </button>
           {confirmClear ? (
             <>
               <button
                 onClick={() => { onClearAll(); setConfirmClear(false) }}
-                className="flex-1 py-2 bg-brand-red/20 text-brand-red text-xs font-semibold rounded-full hover:bg-brand-red/30 transition-all"
+                className="flex-1 py-2 bg-brand-red/20 text-brand-red text-xs font-semibold rounded-full hover:bg-brand-red/30 transition-all duration-200 ease-spring active:scale-[0.97]"
               >
                 Confirm Clear
               </button>
               <button
                 onClick={() => setConfirmClear(false)}
-                className="px-4 py-2 text-white/30 text-xs font-semibold hover:text-white/60 transition-colors"
+                className="px-4 py-2 text-white/40 text-xs font-semibold hover:text-white/70 transition-colors rounded-full"
               >
                 Cancel
               </button>
@@ -118,7 +125,7 @@ export default function ColorHistory({ history, onRemove, onLabelChange, onClear
           ) : (
             <button
               onClick={() => setConfirmClear(true)}
-              className="ml-auto px-4 py-2 text-white/20 text-xs font-semibold hover:text-white/50 transition-colors"
+              className="ml-auto px-4 py-2 text-white/30 text-xs font-semibold hover:text-white/60 transition-colors rounded-full"
             >
               Clear All
             </button>

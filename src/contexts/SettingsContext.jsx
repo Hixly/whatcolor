@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 
 const DEFAULTS = {
-  theme: 'light',
   colorblindProfile: 'none',
   colorFormat: 'hex',
   facingMode: 'environment',
@@ -22,15 +21,6 @@ export function SettingsProvider({ children }) {
 
   useEffect(() => {
     localStorage.setItem('wc_settings', JSON.stringify(settings))
-    const root = document.documentElement
-    if (settings.theme === 'dark') {
-      root.classList.add('dark')
-    } else if (settings.theme === 'light') {
-      root.classList.remove('dark')
-    } else {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      root.classList.toggle('dark', prefersDark)
-    }
   }, [settings])
 
   function updateSetting(key, value) {

@@ -28,28 +28,26 @@ const STEPS = [
 export default function HowItWorks() {
   const [ref, inView] = useInView()
   return (
-    <section ref={ref} className="px-6 py-24 max-w-5xl mx-auto">
+    <section id="how-it-works" ref={ref} className="px-6 py-24 max-w-5xl mx-auto">
       <div className={`text-center mb-16 transition-all duration-700 ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
-        <p className="section-eyebrow mb-3">How it works</p>
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
-          Three steps. Zero friction.
-        </h2>
+        <p className="text-xs font-semibold tracking-widest uppercase text-gray-400 mb-3">How it works</p>
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">Three steps. Zero friction.</h2>
       </div>
       <div className="grid md:grid-cols-3 gap-6">
         {STEPS.map(({ Icon, step, title, desc, accent }, i) => (
           <div
             key={step}
-            className={`relative flex flex-col gap-5 p-7 bg-white border border-gray-100 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+            className={`relative flex flex-col gap-5 p-7 glass-light rounded-3xl hover:-translate-y-1 transition-all duration-300 group ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
             style={{ transitionDelay: inView ? `${i * 120}ms` : '0ms' }}
           >
             <div className="flex items-center justify-between">
               <div
                 className="w-11 h-11 rounded-2xl flex items-center justify-center"
-                style={{ backgroundColor: `${accent}15`, color: accent }}
+                style={{ backgroundColor: `${accent}1f`, color: accent }}
               >
                 <Icon size={20} strokeWidth={2} />
               </div>
-              <span className="text-4xl font-bold text-gray-100 group-hover:text-gray-200 transition-colors select-none tabular-nums">
+              <span className="text-4xl font-bold transition-colors select-none tabular-nums" style={{ color: `${accent}33` }}>
                 {step}
               </span>
             </div>

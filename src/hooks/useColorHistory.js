@@ -46,10 +46,13 @@ export function useColorHistory() {
 
   const exportJson = useCallback(() => {
     const blob = new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
+    a.href = url
     a.download = 'whatcolor-history.json'
     a.click()
+    // Release the object URL so it doesn't leak for the page's lifetime.
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
   }, [history])
 
   return { history, save, remove, updateLabel, clearAll, exportJson }

@@ -96,8 +96,12 @@ export function useColorDetection({ videoRef, canvasRef, samplingSize = 3, profi
         const canvas = canvasRef.current
         if (video && canvas && video.readyState >= 2) {
           const ctx = canvas.getContext('2d')
-          canvas.width = video.videoWidth
-          canvas.height = video.videoHeight
+          // Only resize when the video dimensions actually change — assigning
+          // canvas.width/height every frame clears the bitmap and is costly.
+          if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+            canvas.width = video.videoWidth
+            canvas.height = video.videoHeight
+          }
           ctx.drawImage(video, 0, 0)
 
           const cx = Math.floor(canvas.width / 2)

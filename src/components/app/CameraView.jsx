@@ -12,10 +12,10 @@ function SmallBtn({ onClick, active, children, label }) {
       onClick={onClick}
       aria-label={label}
       title={label}
-      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 ${
+      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ease-spring active:scale-90 backdrop-blur-md ${
         active
-          ? 'bg-white/30 text-white'
-          : 'bg-black/40 text-white/70 hover:bg-black/60 hover:text-white'
+          ? 'bg-white/30 text-white raised-light'
+          : 'bg-black/40 text-white/70 hover:bg-black/60 hover:text-white border border-white/[0.08]'
       }`}
     >
       {children}
@@ -66,7 +66,7 @@ function CameraUnavailable({ onSwitchToUpload }) {
 //         pill py-3(24) + h-11 content(44) + mb-3 margin(12) = 80px
 //         total = 164px
 const TOP_BAR_H = 80
-const BOTTOM_H = 164
+const BOTTOM_H = 176
 
 export default function CameraView({ onColorChange, onSave, onSwitchToUpload, onSwitchToCompare, onSwitchToHistory }) {
   const { settings } = useSettings()
@@ -83,8 +83,16 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
     active: !paused && status === 'active',
   })
 
+  // Fires only when the detection hook confirms a new color name (a "lock").
+  const [lockKey, setLockKey] = useState(0)
+
   useEffect(() => { start(); return stop }, [start, stop])
   useEffect(() => { if (color && onColorChange) onColorChange(color) }, [color, onColorChange])
+  useEffect(() => {
+    if (!color?.name) return
+    setLockKey(k => k + 1)
+    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(8)
+  }, [color?.name])
 
   function handleTapOnPaused(e) {
     if (!paused) return
@@ -129,12 +137,29 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
         <div className="absolute inset-0 flex flex-col pointer-events-none">
           <div style={{ height: TOP_BAR_H }} />
           <div className="flex-1 flex items-center justify-center">
-            <img
-              src="/logo-symbol-white.png"
-              alt=""
-              className="h-[80px] w-auto drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)]"
-              draggable={false}
-            />
+            <div className="relative flex items-center justify-center">
+              {/* One-shot pulse ring in the locked color */}
+              {color && (
+                <span
+                  key={lockKey}
+                  className="absolute rounded-full animate-lockPulse"
+                  style={{
+                    width: 96,
+                    height: 96,
+                    border: `2px solid ${color.hex}`,
+                    boxShadow: `0 0 12px 1px ${color.hex}80`,
+                  }}
+                />
+              )}
+              {/* Crosshair — gently breathes while live */}
+              <img
+                src="/logo-symbol-transparent.png"
+                srcSet="/logo-symbol-transparent.png 1x, /logo-symbol-transparent@2x.png 2x"
+                alt=""
+                className={`h-[80px] w-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] ${paused ? '' : 'animate-breathe'}`}
+                draggable={false}
+              />
+            </div>
           </div>
           <div style={{ height: BOTTOM_H }} />
         </div>
@@ -143,7 +168,7 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
       {/* Tap-to-sample: follows where user tapped */}
       {paused && tapPoint && (
         <div
-          className="absolute pointer-events-none transition-all duration-150"
+          className="absolute pointer-events-none w-max transition-all duration-150"
           style={{
             left: `${tapPoint.xPct}%`,
             top: `${tapPoint.yPct}%`,
@@ -151,10 +176,11 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
           }}
         >
           <img
-            src="/logo-symbol-white.png"
+            src="/logo-symbol-transparent.png"
+            srcSet="/logo-symbol-transparent.png 1x, /logo-symbol-transparent@2x.png 2x"
             alt=""
             height={80}
-            className="drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)] w-auto"
+            className="drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] w-auto"
             draggable={false}
           />
         </div>
@@ -187,8 +213,9 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
 
       {/* ── Bottom section ────────────────────────────────────────────────── */}
       <div className="absolute bottom-0 left-0 right-0" style={{ height: BOTTOM_H }}>
-        {/* Controls — 3-column grid guarantees pause button is at exact center */}
-        <div className="grid grid-cols-3 items-center px-6 pt-4 pb-2">
+        {/* Controls — one floating glass module; 3-col grid keeps pause centered */}
+        <div className="px-3 pt-3 pb-2">
+          <div className="grid grid-cols-3 items-center gap-1 px-3 py-2 rounded-full bg-black/35 backdrop-blur-xl border border-white/[0.08] raised-dark">
           {/* Left: torch */}
           <div className="flex items-center">
             <SmallBtn onClick={toggleTorch} active={torchOn} label="Toggle flashlight">
@@ -201,10 +228,10 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
             <button
               onClick={togglePause}
               aria-label={paused ? 'Resume' : 'Pause & tap to sample'}
-              className={`w-[60px] h-[60px] rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 shadow-xl ${
+              className={`w-[60px] h-[60px] rounded-full flex items-center justify-center transition-all duration-200 ease-spring active:scale-90 ${
                 paused
-                  ? 'bg-white text-black'
-                  : 'bg-white/20 border-2 border-white/50 text-white hover:bg-white/30'
+                  ? 'bg-white text-black raised-light'
+                  : 'bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 backdrop-blur-md shadow-xl'
               }`}
             >
               {paused ? <PlayIcon size={22} /> : <PauseIcon size={22} />}
@@ -223,6 +250,7 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
               <HistoryIcon size={15} />
             </SmallBtn>
           </div>
+          </div>
         </div>
 
         {/* Color info pill — tap to open full details sheet */}
@@ -231,7 +259,14 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
           onClick={() => color && setShowDetails(true)}
           aria-label="Tap to view color details"
         >
-          <div className="bg-[#0f0f0f]/90 backdrop-blur-xl rounded-2xl border border-white/[0.07]">
+          <div
+            className="backdrop-blur-xl rounded-2xl border border-white/[0.09] transition-[background] duration-500 ease-out raised-dark"
+            style={{
+              background: color
+                ? `linear-gradient(180deg, ${color.hex}1f 0%, rgba(15,15,15,0.92) 60%)`
+                : 'rgba(15,15,15,0.9)',
+            }}
+          >
             <ColorInfoPanel color={color} onSave={onSave} dark compact />
           </div>
         </button>
@@ -247,19 +282,23 @@ export default function CameraView({ onColorChange, onSave, onSwitchToUpload, on
           />
           {/* Sheet */}
           <div className="relative bg-[#111] rounded-t-3xl border-t border-white/[0.08] shadow-2xl">
-            {/* Drag handle */}
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 bg-white/20 rounded-full" />
+            {/* Top bar: drag handle centered, close on the right — no overlap with panel actions */}
+            <div className="grid grid-cols-3 items-center px-3 pt-3 pb-1">
+              <div />
+              <div className="flex justify-center">
+                <div className="w-10 h-1 bg-white/20 rounded-full" />
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowDetails(false)}
+                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition-all duration-200 ease-spring active:scale-90"
+                  aria-label="Close"
+                >
+                  <XIcon size={14} />
+                </button>
+              </div>
             </div>
-            {/* Close button */}
-            <button
-              onClick={() => setShowDetails(false)}
-              className="absolute top-3 right-4 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
-              aria-label="Close"
-            >
-              <XIcon size={14} />
-            </button>
-            <div className="px-5 pt-2 pb-8">
+            <div className="px-5 pt-1 pb-8">
               <ColorInfoPanel color={color} onSave={onSave} dark />
             </div>
           </div>

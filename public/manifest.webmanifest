@@ -1,0 +1,17 @@
+{
+  "name": "WhatColor — See More. Know More.",
+  "short_name": "WhatColor",
+  "description": "Identify any color around you, instantly. A camera-based color identifier built for people with color vision deficiency.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#ffffff",
+  "categories": ["utilities", "productivity", "medical"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

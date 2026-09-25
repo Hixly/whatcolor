@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="7" fill="#111"/>
+  <rect width="32" height="32" rx="7" fill="#FFFFFF"/>
   <!-- Rainbow ring: 6 segments of 60°, outerR=14.5, innerR=8.2 -->
   <!-- Red: 0°–60° -->
   <path d="M 16 1.5 A 14.5 14.5 0 0 1 28.56 8.75 L 23.1 11.9 A 8.2 8.2 0 0 0 16 7.8 Z" fill="#FF3B30"/>
@@ -13,9 +13,9 @@
   <path d="M 3.44 23.25 A 14.5 14.5 0 0 1 3.44 8.75 L 8.9 11.9 A 8.2 8.2 0 0 0 8.9 20.1 Z" fill="#0A84FF"/>
   <!-- Purple: 300°–360° -->
   <path d="M 3.44 8.75 A 14.5 14.5 0 0 1 16 1.5 L 16 7.8 A 8.2 8.2 0 0 0 8.9 11.9 Z" fill="#BF5AF2"/>
-  <!-- Crosshair lines ON TOP -->
-  <line x1="16" y1="0.6" x2="16" y2="31.4" stroke="white" stroke-width="2.1" stroke-linecap="round"/>
-  <line x1="0.6" y1="16" x2="31.4" y2="16" stroke="white" stroke-width="2.1" stroke-linecap="round"/>
+  <!-- Crosshair lines ON TOP (black, like the real icon) -->
+  <line x1="16" y1="0.6" x2="16" y2="31.4" stroke="#111111" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="0.6" y1="16" x2="31.4" y2="16" stroke="#111111" stroke-width="2.1" stroke-linecap="round"/>
   <!-- Center dot -->
-  <circle cx="16" cy="16" r="3.4" fill="white"/>
+  <circle cx="16" cy="16" r="3.4" fill="#111111"/>
 </svg>

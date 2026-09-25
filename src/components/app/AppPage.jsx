@@ -49,18 +49,18 @@ export default function AppPage() {
         {/* Pill tab strip */}
         {(mode === 'camera' || mode === 'upload') && (
           <div className="px-4 pt-4 pb-0 shrink-0">
-            <div className="flex gap-2 p-1 bg-white/5 rounded-2xl">
+            <div className="flex gap-1 p-1 rounded-2xl glass-track-dark">
               <button
                 onClick={() => setMode('compare')}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-white/40 hover:text-white/70 hover:bg-white/5 transition-all duration-200"
+                className="group/tab flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-white/45 hover:text-white hover:bg-white/[0.07] transition-all duration-200 ease-spring active:scale-[0.97]"
               >
-                <CompareIcon size={13} /> Compare
+                <CompareIcon size={13} className="transition-transform duration-300 ease-spring group-hover/tab:scale-110" /> Compare
               </button>
               <button
                 onClick={() => setMode('history')}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-white/40 hover:text-white/70 hover:bg-white/5 transition-all duration-200"
+                className="group/tab flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-white/45 hover:text-white hover:bg-white/[0.07] transition-all duration-200 ease-spring active:scale-[0.97]"
               >
-                <HistoryIcon size={13} /> History {history.length > 0 && <span className="ml-0.5 bg-white/10 px-1.5 py-0.5 rounded-full text-[10px]">{history.length}</span>}
+                <HistoryIcon size={13} className="transition-transform duration-300 ease-spring group-hover/tab:scale-110" /> History {history.length > 0 && <span className="ml-0.5 bg-white/12 text-white/80 px-1.5 py-0.5 rounded-full text-[10px] tabular-nums">{history.length}</span>}
               </button>
             </div>
           </div>

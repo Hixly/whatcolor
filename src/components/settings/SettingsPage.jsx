@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useSettings } from '../../contexts/SettingsContext'
 import { PROFILE_LABELS } from '../../utils/confusionPairs'
+import { ChevronDownIcon, ArrowLeftIcon } from '../ui/Icons'
+import { SOCIALS } from '../../socials'
 
 function Section({ title, children }) {
   return (
@@ -27,13 +29,19 @@ function Row({ label, description, children }) {
 
 function Select({ value, onChange, children }) {
   return (
-    <select
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      className="bg-dark-surface border border-dark-border rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-gray-500 appearance-none cursor-pointer"
-    >
-      {children}
-    </select>
+    <div className="relative inline-block group/sel">
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="bg-dark-surface border border-white/[0.08] rounded-xl pl-4 pr-10 py-2.5 text-white text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 hover:border-white/[0.16] transition-colors duration-200 appearance-none cursor-pointer raised-dark"
+      >
+        {children}
+      </select>
+      <ChevronDownIcon
+        size={15}
+        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/40 transition-transform duration-300 ease-spring group-focus-within/sel:rotate-180 group-focus-within/sel:text-white/70"
+      />
+    </div>
   )
 }
 
@@ -44,9 +52,15 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-dark-bg">
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Link to="/app" className="text-gray-500 hover:text-white transition-colors text-xl leading-none">←</Link>
-          <h1 className="text-2xl font-bold text-white">Settings</h1>
+        <div className="flex items-center gap-3 mb-8">
+          <Link
+            to="/app"
+            aria-label="Back to app"
+            className="group/back w-9 h-9 -ml-1 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/[0.06] transition-all duration-200 ease-spring active:scale-90"
+          >
+            <ArrowLeftIcon size={18} className="transition-transform duration-300 ease-spring group-hover/back:-translate-x-0.5" />
+          </Link>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Settings</h1>
         </div>
 
         <div className="flex flex-col gap-4">
@@ -63,17 +77,6 @@ export default function SettingsPage() {
                 Controls the confusion-pair warnings shown when a detected color is commonly mistaken for another with your type of color vision.
               </p>
             </div>
-          </Section>
-
-          {/* Appearance */}
-          <Section title="Appearance">
-            <Row label="Theme" description="Controls the UI color scheme">
-              <Select value={settings.theme} onChange={v => updateSetting('theme', v)}>
-                <option value="dark">Dark (default)</option>
-                <option value="light">Light</option>
-                <option value="system">System</option>
-              </Select>
-            </Row>
           </Section>
 
           {/* Color Format */}
@@ -116,9 +119,30 @@ export default function SettingsPage() {
 
           {/* About */}
           <Section title="About">
-            <p className="text-sm text-gray-500">WhatColor.io — See More. Know More.</p>
+            <p className="text-sm text-gray-500">WhatColor — See More. Know More.</p>
             <p className="text-xs text-gray-600">Built by a colorblind developer, for colorblind people.</p>
-            <Link to="/" className="text-xs text-gray-500 hover:text-white transition-colors">← Back to home</Link>
+
+            {/* Social */}
+            <div className="flex items-center gap-2 pt-1">
+              {SOCIALS.map(({ label, href, Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  title={label}
+                  className="w-9 h-9 rounded-full flex items-center justify-center bg-white/[0.06] border border-white/[0.08] text-white/55 hover:text-white hover:bg-white/[0.12] transition-all duration-200 ease-spring active:scale-90"
+                >
+                  <Icon size={16} />
+                </a>
+              ))}
+            </div>
+
+            <Link to="/" className="group/home inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-white transition-colors">
+              <ArrowLeftIcon size={13} className="transition-transform duration-300 ease-spring group-hover/home:-translate-x-0.5" />
+              Back to home
+            </Link>
           </Section>
         </div>
       </div>

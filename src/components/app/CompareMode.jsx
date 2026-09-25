@@ -47,9 +47,9 @@ function ColorSlot({ label, color, onSet, onCapture, history }) {
           </div>
           <button
             onClick={onCapture}
-            className="flex items-center justify-center gap-2 py-2 rounded-full bg-white/10 text-white/70 text-xs font-semibold hover:bg-white/15 transition-all"
+            className="group/cap flex items-center justify-center gap-2 py-2 rounded-full glass-dark text-white/75 text-xs font-semibold hover:bg-white/[0.15] hover:text-white transition-all duration-200 ease-spring active:scale-[0.97]"
           >
-            <CameraIcon size={13} /> Capture from camera
+            <CameraIcon size={13} className="transition-transform duration-300 ease-spring group-hover/cap:rotate-[-8deg] group-hover/cap:scale-110" /> Capture from camera
           </button>
           <button
             onClick={() => setShowHistory(v => !v)}
@@ -72,7 +72,7 @@ function ColorSlot({ label, color, onSet, onCapture, history }) {
               onChange={e => setHexInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && submitHex()}
             />
-            <button onClick={submitHex} className="px-4 py-2 bg-white/10 text-white/70 text-xs font-semibold rounded-full hover:bg-white/20 transition-all">Set</button>
+            <button onClick={submitHex} className="px-4 py-2 glass-dark text-white/75 text-xs font-semibold rounded-full hover:bg-white/[0.16] hover:text-white transition-all duration-200 ease-spring active:scale-95">Set</button>
           </div>
         </div>
       )}
@@ -105,10 +105,10 @@ export default function CompareMode({ currentColor, history, onBack }) {
   return (
     <div className="flex flex-col h-full overflow-y-auto">
       <div className="flex items-center gap-3 px-5 py-4 border-b border-white/[0.06] shrink-0">
-        <button onClick={onBack} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all">
-          <ArrowLeftIcon size={15} className="text-white/60" />
+        <button onClick={onBack} aria-label="Back" className="group/back w-8 h-8 rounded-full bg-white/5 border border-white/[0.06] flex items-center justify-center hover:bg-white/10 transition-all duration-200 ease-spring active:scale-90">
+          <ArrowLeftIcon size={15} className="text-white/60 transition-transform duration-300 ease-spring group-hover/back:-translate-x-0.5" />
         </button>
-        <h2 className="font-bold text-white">Compare Colors</h2>
+        <h2 className="font-bold text-white tracking-tight">Compare Colors</h2>
       </div>
 
       <div className="flex gap-4 p-5">
