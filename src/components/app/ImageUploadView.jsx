@@ -1,94 +1,84 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useSettings } from '../../contexts/SettingsContext'
-import { formatHex, formatRgb, formatHsl, rgbToHsl } from '../../utils/colorConversions'
-import { nearestColorName } from '../../utils/colorNames'
-import { descriptiveName, contextualReference } from '../../utils/colorDescriptions'
-import { getConfusionWarning } from '../../utils/confusionPairs'
+import { engineOptions } from '../../contexts/engineOptions'
+import { identify } from '../../engine/identify'
+import { createSampler, SPOT_SIZES } from '../../engine/sampler'
 import ColorInfoPanel from './ColorInfoPanel'
+import Reticle from './Reticle'
 import { ImageIcon, RefreshIcon, CameraIcon, ArrowLeftIcon, ChevronDownIcon } from '../ui/Icons'
 
-function analyzePixel(r, g, b, profile) {
-  const hsl = rgbToHsl(r, g, b)
-  return {
-    r, g, b,
-    hex: formatHex(r, g, b),
-    rgb: formatRgb(r, g, b),
-    hsl: formatHsl(r, g, b),
-    name: nearestColorName(r, g, b),
-    descriptive: descriptiveName(r, g, b),
-    reference: contextualReference(r, g, b),
-    confusion: getConfusionWarning(hsl.h, hsl.s, hsl.l, profile),
-  }
-}
+// Photos are sampled a bit tighter than the live camera: no sensor noise to
+// average away, and people tend to aim at small details.
+const PHOTO_SPOT_SCALE = 0.6
 
-export default function ImageUploadView({ onSave, onBack }) {
+export default function ImageUploadView({ onSave, onBack, onColorChange }) {
   const { settings } = useSettings()
+  const engine = useMemo(() => engineOptions(settings), [settings])
   const [imageSrc, setImageSrc] = useState(null)
-  const [color, setColor] = useState(null)
-  const [crosshair, setCrosshair] = useState({ x: 50, y: 50 })
+  const [raw, setRaw] = useState(null) // last sampled pixel; the name is derived from it
+  const [aim, setAim] = useState(null) // { x, y, spotPx } in container pixels
   const [dragging, setDragging] = useState(false)
   const [panelCollapsed, setPanelCollapsed] = useState(false)
-  const canvasRef = useRef(null)
+  const [sampler] = useState(createSampler)
   const imgRef = useRef(null)
+  const stageRef = useRef(null)
+  const pointerDown = useRef(false)
+
+  // Re-derived when the vision profile changes, so warnings stay current.
+  const color = useMemo(() => (raw ? identify(raw.r, raw.g, raw.b, engine) : null), [raw, engine])
+
+  useEffect(() => { onColorChange?.(color) }, [color, onColorChange])
 
   function loadFile(file) {
     if (!file || !file.type.startsWith('image/')) return
     const reader = new FileReader()
     reader.onload = e => {
       setImageSrc(e.target.result)
-      setColor(null)
-      setCrosshair({ x: 50, y: 50 })
+      setRaw(null)
+      setAim(null)
     }
     reader.readAsDataURL(file)
   }
 
-  function handleDrop(e) {
-    e.preventDefault()
-    setDragging(false)
-    loadFile(e.dataTransfer.files[0])
-  }
-
-  function handleFileInput(e) {
-    loadFile(e.target.files[0])
-  }
-
   useEffect(() => {
     function onPaste(e) {
-      const item = Array.from(e.clipboardData.items).find(i => i.type.startsWith('image/'))
+      const item = Array.from(e.clipboardData?.items || []).find(i => i.type.startsWith('image/'))
       if (item) loadFile(item.getAsFile())
     }
     window.addEventListener('paste', onPaste)
     return () => window.removeEventListener('paste', onPaste)
   }, [])
 
-  function sampleAt(xPct, yPct) {
-    const canvas = canvasRef.current
+  const sampleAt = useCallback((clientX, clientY) => {
     const img = imgRef.current
-    if (!canvas || !img) return
-    canvas.width = img.naturalWidth
-    canvas.height = img.naturalHeight
-    const ctx = canvas.getContext('2d')
-    ctx.drawImage(img, 0, 0)
-    const x = Math.round((xPct / 100) * img.naturalWidth)
-    const y = Math.round((yPct / 100) * img.naturalHeight)
-    const size = settings.samplingSize
-    const half = Math.floor(size / 2)
-    const data = ctx.getImageData(Math.max(0, x - half), Math.max(0, y - half), size, size).data
-    let r = 0, g = 0, b = 0
-    const count = size * size
-    for (let i = 0; i < count * 4; i += 4) { r += data[i]; g += data[i + 1]; b += data[i + 2] }
-    setColor(analyzePixel(Math.round(r / count), Math.round(g / count), Math.round(b / count), settings.colorblindProfile))
+    const stage = stageRef.current
+    if (!img || !stage || !img.naturalWidth) return
+    // The <img> box is exactly the displayed picture (it keeps its aspect
+    // ratio), so only points inside it count.
+    const r = img.getBoundingClientRect()
+    const u = (clientX - r.left) / r.width
+    const v = (clientY - r.top) / r.height
+    if (u < 0 || v < 0 || u > 1 || v > 1) return
+    const scale = r.width / img.naturalWidth
+    const size = Math.min(img.naturalWidth, img.naturalHeight) * SPOT_SIZES[settings.spot || 'medium'] * PHOTO_SPOT_SCALE
+    const px = sampler(img, u * img.naturalWidth, v * img.naturalHeight, size)
+    const s = stage.getBoundingClientRect()
+    setAim({ x: clientX - s.left, y: clientY - s.top, spotPx: Math.max(10, size * scale) })
+    setRaw({ r: px.r, g: px.g, b: px.b })
+  }, [sampler, settings.spot])
+
+  function onPointerDown(e) {
+    pointerDown.current = true
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+    sampleAt(e.clientX, e.clientY)
+  }
+  function onPointerMove(e) {
+    if (pointerDown.current) sampleAt(e.clientX, e.clientY)
+  }
+  function onPointerUp() {
+    pointerDown.current = false
   }
 
-  function handleImageClick(e) {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const xPct = ((e.clientX - rect.left) / rect.width) * 100
-    const yPct = ((e.clientY - rect.top) / rect.height) * 100
-    setCrosshair({ x: xPct, y: yPct })
-    sampleAt(xPct, yPct)
-  }
-
-  // Drop zone (no image loaded yet)
   if (!imageSrc) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-6 gap-6 bg-dark-bg">
@@ -96,17 +86,17 @@ export default function ImageUploadView({ onSave, onBack }) {
           className={`w-full max-w-md border-2 border-dashed rounded-3xl p-10 text-center transition-all duration-300 ease-soft ${dragging ? 'border-white/60 bg-white/[0.06] scale-[1.01]' : 'border-white/[0.12] hover:border-white/25'}`}
           onDragOver={e => { e.preventDefault(); setDragging(true) }}
           onDragLeave={() => setDragging(false)}
-          onDrop={handleDrop}
+          onDrop={e => { e.preventDefault(); setDragging(false); loadFile(e.dataTransfer.files[0]) }}
         >
           <div className={`w-16 h-16 mx-auto mb-5 rounded-2xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center transition-transform duration-300 ease-spring ${dragging ? 'scale-110' : ''}`}>
             <ImageIcon size={28} className="text-white/70" strokeWidth={1.6} />
           </div>
-          <p className="text-white font-semibold mb-1">Drop an image here</p>
-          <p className="text-gray-500 text-sm mb-6 font-light">or paste from clipboard (Ctrl+V)</p>
-          <label className="group/file inline-flex items-center gap-2 px-6 py-3 bg-[#111] text-white rounded-full font-semibold text-sm cursor-pointer raised-dark hover:bg-black hover:-translate-y-0.5 transition-all duration-200 ease-spring active:scale-[0.97] active:duration-75 select-none">
-            <input type="file" accept="image/*" className="hidden" onChange={handleFileInput} />
+          <p className="text-white font-semibold mb-1">Drop a photo here</p>
+          <p className="text-gray-500 text-sm mb-6 font-light">or paste one (Ctrl+V). It never leaves your device.</p>
+          <label className="group/file inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full font-semibold text-sm cursor-pointer hover:bg-gray-100 hover:-translate-y-0.5 transition-all duration-200 ease-spring active:scale-[0.97] select-none">
+            <input type="file" accept="image/*" className="hidden" onChange={e => loadFile(e.target.files[0])} />
             <ImageIcon size={16} className="transition-transform duration-300 ease-spring group-hover/file:scale-110" />
-            Choose File
+            Choose a photo
           </label>
         </div>
         <button onClick={onBack} className="group/back inline-flex items-center gap-2 text-gray-500 hover:text-white text-sm transition-colors">
@@ -118,45 +108,48 @@ export default function ImageUploadView({ onSave, onBack }) {
   }
 
   return (
-    <div className="relative w-full h-full bg-black overflow-hidden">
-      {/* Image */}
+    <div ref={stageRef} className="relative w-full h-full bg-black overflow-hidden select-none">
       <div
-        className="absolute inset-0 flex items-center justify-center cursor-crosshair"
-        onClick={handleImageClick}
+        className="absolute inset-0 flex items-center justify-center cursor-crosshair touch-none"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
       >
         <img
           ref={imgRef}
           src={imageSrc}
-          alt="Uploaded for color detection"
-          className="max-w-full max-h-full object-contain select-none"
-          crossOrigin="anonymous"
-        />
-      </div>
-      <canvas ref={canvasRef} className="hidden" />
-
-      {/* Crosshair at tap point — the iconic WhatColor target reader */}
-      <div
-        className="absolute pointer-events-none w-max"
-        style={{ left: `${crosshair.x}%`, top: `${crosshair.y}%`, transform: 'translate(-50%, -50%)' }}
-      >
-        <img
-          src="/logo-symbol-transparent.png"
-          srcSet="/logo-symbol-transparent.png 1x, /logo-symbol-transparent@2x.png 2x"
-          alt=""
-          className="h-[80px] w-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
+          alt="Your photo"
+          className="max-w-full max-h-full object-contain"
           draggable={false}
         />
       </div>
 
-      {/* Top bar */}
+      {aim && (
+        <div
+          className="absolute pointer-events-none"
+          style={{ left: aim.x, top: aim.y, transform: 'translate(-50%, -50%)' }}
+        >
+          <Reticle size={84} spot={aim.spotPx} />
+        </div>
+      )}
+
+      {!aim && (
+        <div className="absolute inset-x-0 top-20 flex justify-center pointer-events-none">
+          <span className="px-3.5 py-1.5 rounded-full bg-black/55 backdrop-blur-md text-white/85 text-xs font-medium border border-white/10">
+            Tap or drag across the photo
+          </span>
+        </div>
+      )}
+
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-black/60 via-black/20 to-transparent">
         <span className="font-bold text-white text-sm tracking-tight"><span className="font-normal">What</span>Color</span>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => { setImageSrc(null); setColor(null) }}
+            onClick={() => { setImageSrc(null); setRaw(null); setAim(null) }}
             className="group/new w-10 h-10 rounded-full flex items-center justify-center bg-black/40 text-white/70 border border-white/[0.08] hover:bg-black/60 hover:text-white transition-all duration-200 ease-spring active:scale-90 backdrop-blur-md"
-            aria-label="Load new image"
-            title="Load new image"
+            aria-label="Choose another photo"
+            title="Choose another photo"
           >
             <RefreshIcon size={17} className="transition-transform duration-500 ease-spring group-hover/new:rotate-180" />
           </button>
@@ -171,22 +164,20 @@ export default function ImageUploadView({ onSave, onBack }) {
         </div>
       </div>
 
-      {/* Mobile color panel — collapsible tinted glass so it never blocks the photo */}
+      {/* Mobile color panel (desktop shows it in the sidebar) */}
       <div className="absolute bottom-0 left-0 right-0 lg:hidden pointer-events-none">
-        {/* Sliding panel */}
         <div
           className="px-3 pb-3 transition-transform duration-300 ease-soft pointer-events-auto"
           style={{ transform: panelCollapsed ? 'translateY(120%)' : 'translateY(0)' }}
         >
           <div
-            className="p-4 pt-2 backdrop-blur-xl rounded-2xl border border-white/[0.09] transition-[background] duration-500 ease-out raised-dark"
+            className="p-4 pt-2 backdrop-blur-xl rounded-2xl border border-white/[0.09] transition-[background] duration-500 ease-out raised-dark max-h-[55vh] overflow-y-auto"
             style={{
               background: color
                 ? `linear-gradient(180deg, ${color.hex}1f 0%, rgba(17,17,17,0.94) 60%)`
                 : 'rgba(17,17,17,0.92)',
             }}
           >
-            {/* Grabber — tap to hide the panel */}
             <button
               onClick={() => setPanelCollapsed(true)}
               aria-label="Hide color panel"
@@ -196,24 +187,22 @@ export default function ImageUploadView({ onSave, onBack }) {
               <ChevronDownIcon size={14} className="text-white/30 group-hover/grab:text-white/55 transition-colors" />
             </button>
 
-            {!color
-              ? (
-                <div className="flex items-center gap-3 py-1">
-                  <div className="w-[52px] h-[52px] rounded-[15px] shrink-0 bg-white/[0.06] border border-white/[0.08] flex items-center justify-center">
-                    <ImageIcon size={22} className="text-white/40" />
-                  </div>
-                  <div>
-                    <p className="text-white/70 text-[15px] font-medium leading-tight">Tap anywhere on the image</p>
-                    <p className="text-white/35 text-[12px] font-light mt-0.5">Pick a point to identify its color</p>
-                  </div>
+            {!color ? (
+              <div className="flex items-center gap-3 py-1">
+                <div className="w-[52px] h-[52px] rounded-[15px] shrink-0 bg-white/[0.06] border border-white/[0.08] flex items-center justify-center">
+                  <ImageIcon size={22} className="text-white/40" />
                 </div>
-              )
-              : <ColorInfoPanel color={color} onSave={onSave} dark />
-            }
+                <div>
+                  <p className="text-white/70 text-[15px] font-medium leading-tight">Tap anywhere on the photo</p>
+                  <p className="text-white/35 text-[12px] font-light mt-0.5">Or drag to scan across it</p>
+                </div>
+              </div>
+            ) : (
+              <ColorInfoPanel color={color} onSave={onSave} dark />
+            )}
           </div>
         </div>
 
-        {/* Collapsed HUD pill — live swatch + hex, tap to bring the panel back */}
         <button
           onClick={() => setPanelCollapsed(false)}
           aria-label="Show color panel"
@@ -224,7 +213,7 @@ export default function ImageUploadView({ onSave, onBack }) {
           {color ? (
             <>
               <span className="w-6 h-6 rounded-full shrink-0" style={{ backgroundColor: color.hex, boxShadow: `0 0 10px 0 ${color.hex}80` }} />
-              <span className="font-mono text-[13px] text-white/90 tabular-nums">{color.hex.toUpperCase()}</span>
+              <span className="text-[13px] text-white/90 font-medium">{color.name}</span>
             </>
           ) : (
             <span className="text-[13px] text-white/70 font-medium pl-1">Show color</span>

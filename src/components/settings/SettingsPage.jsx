@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useSettings } from '../../contexts/SettingsContext'
-import { PROFILE_LABELS } from '../../utils/confusionPairs'
+import { CVD_LABELS } from '../../engine/cvd'
 import { ChevronDownIcon, ArrowLeftIcon } from '../ui/Icons'
 import { SOCIALS } from '../../socials'
 
@@ -27,10 +27,11 @@ function Row({ label, description, children }) {
   )
 }
 
-function Select({ value, onChange, children }) {
+function Select({ id, value, onChange, children }) {
   return (
     <div className="relative inline-block group/sel">
       <select
+        id={id}
         value={value}
         onChange={e => onChange(e.target.value)}
         className="bg-dark-surface border border-white/[0.08] rounded-xl pl-4 pr-10 py-2.5 text-white text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 hover:border-white/[0.16] transition-colors duration-200 appearance-none cursor-pointer raised-dark"
@@ -65,18 +66,28 @@ export default function SettingsPage() {
 
         <div className="flex flex-col gap-4">
           {/* Color Vision Profile */}
-          <Section title="Color Vision Profile">
+          <Section title="Your color vision">
             <div className="flex flex-col gap-2">
-              <label className="text-sm text-gray-400">Your color vision type</label>
-              <Select value={settings.colorblindProfile} onChange={v => updateSetting('colorblindProfile', v)}>
-                {Object.entries(PROFILE_LABELS).map(([key, label]) => (
+              <label htmlFor="cvd-type" className="text-sm text-gray-400">Type</label>
+              <Select id="cvd-type" value={settings.colorblindProfile} onChange={v => updateSetting('colorblindProfile', v)}>
+                {Object.entries(CVD_LABELS).map(([key, label]) => (
                   <option key={key} value={key}>{label}</option>
                 ))}
               </Select>
-              <p className="text-xs text-gray-600">
-                Controls the confusion-pair warnings shown when a detected color is commonly mistaken for another with your type of color vision.
+              <p className="text-xs text-gray-500 leading-relaxed">
+                WhatColor simulates your type to warn you when a color can pass for a different one, and to tell you
+                whether two colors will look the same to you. Red-green color blindness affects about 1 in 12 men;
+                deutan is the most common kind.
               </p>
             </div>
+            {['protanopia', 'deuteranopia', 'tritanopia'].includes(settings.colorblindProfile) && (
+              <Row label="How strong" description="Most people have the milder form. Pick strong if reds and greens are very hard for you.">
+                <Select value={settings.cvdStrength} onChange={v => updateSetting('cvdStrength', v)}>
+                  <option value="strong">Strong</option>
+                  <option value="mild">Mild</option>
+                </Select>
+              </Row>
+            )}
           </Section>
 
           {/* Color Format */}
@@ -98,16 +109,17 @@ export default function SettingsPage() {
                 <option value="user">Front camera</option>
               </Select>
             </Row>
-            <Row label="Sampling area" description="Larger areas reduce noise but are less precise">
-              <Select
-                value={String(settings.samplingSize)}
-                onChange={v => updateSetting('samplingSize', Number(v))}
-              >
-                <option value="1">Single pixel</option>
-                <option value="3">3×3 average</option>
-                <option value="5">5×5 average</option>
+            <Row label="Sample spot" description="The circle in the middle of the reticle. Bigger is steadier on textured things like fabric; smaller is better for tiny details.">
+              <Select value={settings.spot} onChange={v => updateSetting('spot', v)}>
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
               </Select>
             </Row>
+            <p className="text-xs text-gray-500 leading-relaxed">
+              Warm bulbs and shade shift what a camera sees. If colors look off, aim at plain white paper and tap
+              Set white in the camera to correct for the light you are in.
+            </p>
           </Section>
 
           {/* Privacy */}
@@ -119,7 +131,7 @@ export default function SettingsPage() {
 
           {/* About */}
           <Section title="About">
-            <p className="text-sm text-gray-500">WhatColor — See More. Know More.</p>
+            <p className="text-sm text-gray-500">WhatColor. See more. Know more.</p>
             <p className="text-xs text-gray-600">Built by a colorblind developer, for colorblind people.</p>
 
             {/* Social */}

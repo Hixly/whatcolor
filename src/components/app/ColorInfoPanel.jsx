@@ -1,37 +1,42 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { useSettings } from '../../contexts/SettingsContext'
 import { CopyIcon, BookmarkIcon, CheckIcon, WarningIcon, SpeakerIcon, ShareIcon } from '../ui/Icons'
-import { simulateCvd, CVD_PREVIEW_TYPES } from '../../utils/cvdSimulate'
+import { simulateRgb, CVD_SHORT } from '../../engine/cvd'
+import { identify, spokenSummary } from '../../engine/identify'
+import { toHex } from '../../engine/colorMath'
+
+const PREVIEW_TYPES = ['protanopia', 'deuteranopia', 'tritanopia', 'achromatopsia']
+
+async function copyText(value) {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value)
+      return true
+    }
+  } catch {
+    // fall through to the legacy path
+  }
+  try {
+    const ta = document.createElement('textarea')
+    ta.value = value
+    ta.style.position = 'fixed'
+    ta.style.opacity = '0'
+    document.body.appendChild(ta)
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+    return true
+  } catch {
+    return false
+  }
+}
 
 function CopyableValue({ label, value, dark }) {
   const [copied, setCopied] = useState(false)
-  async function copy() {
-    let ok = false
-    try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(value)
-        ok = true
-      }
-    } catch {
-      ok = false
-    }
-    if (!ok) {
-      // Fallback for non-secure contexts / denied permission.
-      try {
-        const ta = document.createElement('textarea')
-        ta.value = value
-        ta.style.position = 'fixed'
-        ta.style.opacity = '0'
-        document.body.appendChild(ta)
-        ta.select()
-        document.execCommand('copy')
-        document.body.removeChild(ta)
-        ok = true
-      } catch {
-        ok = false
-      }
-    }
-    if (ok) {
+  async function copy(e) {
+    e.stopPropagation()
+    if (await copyText(value)) {
       setCopied(true)
       setTimeout(() => setCopied(false), 1500)
     }
@@ -57,50 +62,67 @@ function CopyableValue({ label, value, dark }) {
   )
 }
 
+function FamilyChip({ color, dark }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold tracking-wide ${
+        dark ? 'bg-white/[0.08] text-white/75' : 'bg-gray-100 text-gray-600'
+      }`}
+    >
+      {color.family} family
+    </span>
+  )
+}
+
 export default function ColorInfoPanel({ color, onSave, dark = false, compact = false, className = '' }) {
   const { settings } = useSettings()
   const [saved, setSaved] = useState(false)
+
+  const previews = useMemo(() => {
+    if (!color || compact) return []
+    return PREVIEW_TYPES.map((type) => {
+      const s = simulateRgb(color, type)
+      return { type, hex: toHex(s.r, s.g, s.b), looks: identify(s.r, s.g, s.b).family }
+    })
+  }, [color, compact])
 
   function handleSave(e) {
     if (e) e.stopPropagation()
     onSave?.(color)
     setSaved(true)
-    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([10, 30, 10])
+    if (navigator.vibrate && navigator.userActivation?.hasBeenActive) navigator.vibrate([10, 30, 10])
     setTimeout(() => setSaved(false), 1500)
   }
 
-  // Speak the color name aloud — just the name, no numbers.
   function speak(e) {
     if (e) e.stopPropagation()
-    if (!color || typeof window === 'undefined' || !window.speechSynthesis) return
-    const utter = new SpeechSynthesisUtterance(color.name)
+    if (!color || !window.speechSynthesis) return
+    const utter = new SpeechSynthesisUtterance(spokenSummary(color))
     utter.rate = 0.95
     window.speechSynthesis.cancel()
     window.speechSynthesis.speak(utter)
   }
 
-  // Share a single color via the native share sheet, falling back to clipboard.
   async function share(e) {
     if (e) e.stopPropagation()
     if (!color) return
-    const text = `${color.name} — ${color.hex} · ${color.rgb}`
+    const text = `${color.name} (${color.family.toLowerCase()} family), ${color.hex}. ${color.description}.`
     try {
       if (navigator.share) {
-        await navigator.share({ title: `${color.name} (${color.hex})`, text, url: 'https://what-color.com' })
+        await navigator.share({ title: `${color.name} ${color.hex}`, text, url: 'https://what-color.com' })
         return
       }
     } catch {
-      return // user cancelled the share sheet — do nothing
+      return // share sheet dismissed
     }
-    try { await navigator.clipboard?.writeText(`${text}\nwhat-color.com`) } catch { /* no-op */ }
+    await copyText(`${text}\nwhat-color.com`)
   }
 
-  // ── Compact: premium camera result card ────────────────────────────────────
+  // ── Compact: live camera card ─────────────────────────────────────────────
   if (compact) {
     return (
       <div className={`px-4 py-3.5 ${className}`}>
         <div className="flex items-center gap-3.5">
-          {/* Glowing live swatch — crossfades as the color changes */}
           <div
             className="w-[52px] h-[52px] rounded-[15px] shrink-0 transition-all duration-300 ease-out"
             style={{
@@ -109,28 +131,37 @@ export default function ColorInfoPanel({ color, onSave, dark = false, compact = 
                 ? `0 0 0 1px rgba(255,255,255,0.12), 0 4px 18px 0 ${color.hex}80`
                 : 'inset 0 0 0 1px rgba(255,255,255,0.08)',
             }}
-            aria-label={color ? `Color: ${color.hex}` : 'No color'}
+            aria-hidden="true"
           />
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0" aria-live="polite">
             {color ? (
               <>
-                <p className="font-semibold text-white text-[19px] leading-tight truncate">{color.name}</p>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="font-mono text-[13px] text-white/90 tabular-nums">{color.hex.toUpperCase()}</span>
-                  <span className="font-mono text-[11px] text-white/45 tabular-nums truncate">{color.r} · {color.g} · {color.b}</span>
-                </div>
+                <p className="font-semibold text-white text-[20px] leading-tight truncate">{color.name}</p>
+                <p className="mt-1 text-[12px] text-white/55 truncate">
+                  {/* Skip the family when the name already says it ("Light Blue") */}
+                  {!color.name.toLowerCase().includes(color.family.toLowerCase()) && (
+                    <>
+                      <span className="text-white/80 font-medium">{color.family}</span>
+                      <span className="mx-1.5 text-white/25">·</span>
+                    </>
+                  )}
+                  <span className="font-mono tabular-nums">{color.hex}</span>
+                </p>
               </>
             ) : (
               <>
                 <p className="text-white/70 text-[15px] font-medium leading-tight">Aim at a color</p>
-                <p className="text-white/35 text-[12px] font-light mt-0.5">Hold steady to lock it in</p>
+                <p className="text-white/35 text-[12px] font-light mt-0.5">Hold steady and the name locks in</p>
               </>
             )}
           </div>
           {onSave && color && (
-            <button
+            <span
+              role="button"
+              tabIndex={0}
               onClick={handleSave}
-              aria-label={saved ? 'Saved' : 'Save to history'}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleSave(e) }}
+              aria-label={saved ? 'Saved' : 'Save this color'}
               className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 ease-spring active:scale-90 ${
                 saved
                   ? 'bg-green-500/20 text-green-400'
@@ -138,20 +169,26 @@ export default function ColorInfoPanel({ color, onSave, dark = false, compact = 
               }`}
             >
               {saved ? <CheckIcon size={16} strokeWidth={2.5} /> : <BookmarkIcon size={16} />}
-            </button>
+            </span>
           )}
         </div>
 
-        {/* Plain-language description + tap hint */}
-        {color && (color.descriptive || color.reference) && (
+        {color && (
           <>
             <div className="mt-3 h-px bg-white/[0.07]" />
             <div className="mt-2.5 flex items-center gap-2">
-              <p className="flex-1 text-[12px] text-white/50 font-light leading-snug truncate">
-                {color.descriptive}{color.reference ? ` · ${color.reference}` : ''}
+              <p className="flex-1 text-[12.5px] text-white/60 leading-snug truncate">
+                {color.confusion ? (
+                  <span className="text-amber-300/90">
+                    <WarningIcon size={12} className="inline -mt-0.5 mr-1" />
+                    Can look like {color.looksLike.join(' or ')} to you
+                  </span>
+                ) : (
+                  color.description
+                )}
               </p>
-              <span className="text-white/30 text-[10px] font-medium shrink-0 flex items-center gap-1">
-                details <span className="text-white/20">›</span>
+              <span className="text-white/35 text-[11px] font-medium shrink-0">
+                details <span className="text-white/25">›</span>
               </span>
             </div>
           </>
@@ -160,48 +197,46 @@ export default function ColorInfoPanel({ color, onSave, dark = false, compact = 
     )
   }
 
-  // ── Full mode ─────────────────────────────────────────────────────────────
+  // ── Full details ──────────────────────────────────────────────────────────
   if (!color) {
     return (
       <div className={`flex items-center justify-center h-28 text-sm font-light ${dark ? 'text-white/30' : 'text-gray-400'} ${className}`}>
-        Aim the crosshair at any color
+        Aim the reticle at any color
       </div>
     )
   }
 
-  const swatchStyle = { backgroundColor: color.hex }
   const primaryFormat = settings.colorFormat || 'hex'
   const otherFormats = ['hex', 'rgb', 'hsl'].filter(f => f !== primaryFormat)
   const formatValues = { hex: color.hex, rgb: color.rgb, hsl: color.hsl }
+  const hasProfile = settings.colorblindProfile && settings.colorblindProfile !== 'none'
+  const muted = dark ? 'text-white/50' : 'text-gray-500'
+  const faint = dark ? 'text-white/30' : 'text-gray-400'
 
   return (
     <div className={`flex flex-col gap-4 ${className}`}>
-      <div className="flex items-center gap-4">
+      <div className="flex items-start gap-4">
         <div
-          className="w-14 h-14 rounded-2xl shrink-0 shadow-lg"
-          style={swatchStyle}
-          aria-label={`Color: ${color.hex}`}
+          className="w-16 h-16 rounded-2xl shrink-0 shadow-lg"
+          style={{ backgroundColor: color.hex, boxShadow: `0 6px 24px -6px ${color.hex}` }}
+          aria-hidden="true"
         />
         <div className="min-w-0 flex-1">
-          <p className={`text-lg font-bold leading-tight truncate ${dark ? 'text-white' : 'text-gray-900'}`}>{color.name}</p>
-          <p className={`text-sm mt-0.5 truncate font-light ${dark ? 'text-white/50' : 'text-gray-500'}`}>{color.descriptive}</p>
-          {color.reference && (
-            <p className={`text-xs mt-0.5 truncate ${dark ? 'text-white/30' : 'text-gray-400'}`}>{color.reference}</p>
-          )}
+          <p className={`text-[22px] font-bold leading-tight ${dark ? 'text-white' : 'text-gray-900'}`}>{color.name}</p>
+          <div className="mt-1.5"><FamilyChip color={color} dark={dark} /></div>
         </div>
-        {/* Speak aloud + share */}
         <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={speak}
-            aria-label="Speak color name aloud"
-            title="Speak aloud"
+            aria-label="Read the color aloud"
+            title="Read aloud"
             className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ease-spring active:scale-90 ${dark ? 'bg-white/[0.08] text-white/60 hover:bg-white/[0.16] hover:text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-800'}`}
           >
             <SpeakerIcon size={16} />
           </button>
           <button
             onClick={share}
-            aria-label="Share color"
+            aria-label="Share this color"
             title="Share"
             className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ease-spring active:scale-90 ${dark ? 'bg-white/[0.08] text-white/60 hover:bg-white/[0.16] hover:text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-800'}`}
           >
@@ -211,33 +246,52 @@ export default function ColorInfoPanel({ color, onSave, dark = false, compact = 
       </div>
 
       <div className="flex flex-col gap-1">
+        <p className={`text-[15px] leading-snug ${dark ? 'text-white/85' : 'text-gray-800'}`}>{color.description}</p>
+        {color.like && <p className={`text-[13px] ${muted}`}>{color.like.charAt(0).toUpperCase() + color.like.slice(1)}.</p>}
+        {color.alsoCalled && (
+          <p className={`text-[13px] ${muted}`}>
+            On the edge. Some people would call it <span className={dark ? 'text-white/80' : 'text-gray-700'}>{color.alsoCalled}</span>.
+          </p>
+        )}
+      </div>
+
+      {color.confusion && (
+        <div className={`flex items-start gap-2 px-3 py-2.5 rounded-2xl text-sm ${dark ? 'bg-amber-500/10 border border-amber-500/20 text-amber-200' : 'bg-amber-50 border border-amber-200 text-amber-800'}`}>
+          <WarningIcon size={15} className="shrink-0 mt-0.5" />
+          <span className="text-[13px] leading-relaxed">{color.confusion}</span>
+        </div>
+      )}
+
+      <div className="flex flex-col gap-1">
         <CopyableValue label={primaryFormat.toUpperCase()} value={formatValues[primaryFormat]} dark={dark} />
         {otherFormats.map(f => (
           <CopyableValue key={f} label={f.toUpperCase()} value={formatValues[f]} dark={dark} />
         ))}
       </div>
 
-      {/* How others might see this — CVD simulation preview */}
       <div>
-        <p className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${dark ? 'text-white/30' : 'text-gray-400'}`}>How others may see it</p>
+        <p className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${faint}`}>How it looks to others</p>
         <div className="grid grid-cols-4 gap-2">
-          {CVD_PREVIEW_TYPES.map(({ type, label }) => (
-            <div key={type} className="flex flex-col items-center gap-1.5">
+          {previews.map(({ type, hex, looks }) => (
+            <div key={type} className="flex flex-col items-center gap-1">
               <div
                 className={`w-full h-9 rounded-lg ${dark ? 'border border-white/10' : 'border border-black/5'}`}
-                style={{ backgroundColor: simulateCvd(color.hex, type) }}
+                style={{ backgroundColor: hex }}
+                title={`${CVD_SHORT[type]}: reads as ${looks.toLowerCase()}`}
               />
-              <span className={`text-[10px] font-medium ${dark ? 'text-white/40' : 'text-gray-400'}`}>{label}</span>
+              <span className={`text-[10px] font-semibold ${dark ? 'text-white/60' : 'text-gray-600'}`}>{CVD_SHORT[type]}</span>
+              <span className={`text-[10px] -mt-0.5 ${faint}`}>{looks}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {color.confusion && (
-        <div className={`flex items-start gap-2 px-3 py-2.5 rounded-2xl text-sm ${dark ? 'bg-yellow-500/10 border border-yellow-500/20 text-yellow-300' : 'bg-amber-50 border border-amber-200 text-amber-700'}`}>
-          <WarningIcon size={15} className="shrink-0 mt-0.5" />
-          <span className="font-light text-xs leading-relaxed">{color.confusion}</span>
-        </div>
+      {!hasProfile && (
+        <p className={`text-[12px] leading-relaxed ${faint}`}>
+          Tip: set your color vision type in{' '}
+          <Link to="/settings" className="underline underline-offset-2 hover:opacity-80">Settings</Link>{' '}
+          and WhatColor will warn you about colors you might mix up.
+        </p>
       )}
 
       {onSave && (
@@ -252,7 +306,7 @@ export default function ColorInfoPanel({ color, onSave, dark = false, compact = 
           {saved
             ? <CheckIcon size={15} strokeWidth={2.5} />
             : <BookmarkIcon size={15} className="transition-transform duration-300 ease-spring group-hover/save:scale-110 group-hover/save:-translate-y-0.5" />}
-          {saved ? 'Saved' : 'Save to History'}
+          {saved ? 'Saved' : 'Save color'}
         </button>
       )}
     </div>

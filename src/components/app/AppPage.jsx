@@ -35,6 +35,7 @@ export default function AppPage() {
           <ImageUploadView
             onSave={color => save(color)}
             onBack={() => setMode('camera')}
+            onColorChange={setCurrentColor}
           />
         )}
         {(mode === 'compare' || mode === 'history') && (

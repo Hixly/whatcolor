@@ -42,7 +42,7 @@ const HUE_WORD = { ...Object.fromEntries(HUE_ORDER.map((f) => [f, f])), teal: 'b
 
 const hueDelta = (from, to) => ((to - from + 540) % 360) - 180
 
-function leanFor(family, h) {
+function leanFor(family, h, L) {
   const i = HUE_ORDER.indexOf(family)
   if (i < 0 || family === 'teal') return null
   const prev = HUE_ORDER[(i + HUE_ORDER.length - 1) % HUE_ORDER.length]
@@ -53,6 +53,8 @@ function leanFor(family, h) {
   // Only call it out once the hue is well on its way to the neighbor.
   if (Math.abs(d) < gap * 0.38) return null
   if (neighbor === 'teal') return family === 'green' ? 'bluish' : 'greenish'
+  // Dark reds leaning toward pink read as berry/wine, i.e. purplish.
+  if (neighbor === 'pink' && L < 0.5) return 'purplish'
   return LEAN_WORD[neighbor]
 }
 
@@ -140,7 +142,7 @@ function chromaticDescription(family, lch) {
   if (family === 'brown') {
     hue = h < 50 ? 'reddish brown' : h > 90 ? 'greenish brown' : h > 72 ? 'yellowish brown' : 'brown'
   } else {
-    const lean = leanFor(family, h)
+    const lean = leanFor(family, h, L)
     hue = lean ? `${lean} ${HUE_WORD[family]}` : HUE_WORD[family]
   }
   const phrase = words.length ? `${words.join(', ')} ${hue}` : hue
@@ -205,16 +207,29 @@ export function confusionFor({ r, g, b }, family, profile, severity = 1) {
 
 // ── Public API ──────────────────────────────────────────────────────────────
 
-export function identify(r, g, b, { profile = 'none', severity = 1 } = {}) {
+// A live camera hovers on name boundaries; keeping the current name until
+// another is clearly better stops "Teal, Turquoise, Teal..." flicker.
+const STICKY_MARGIN = 0.012
+
+export function identify(
+  r, g, b,
+  { profile = 'none', severity = 1, stickTo = null, stickMargin = STICKY_MARGIN } = {},
+) {
   const lab = rgbToOklab(r, g, b)
   const lch = oklabToOklch(lab)
-  const [first, second] = rankNames(lab, 12)
+  const ranked = rankNames(lab, 12)
+  let first = ranked[0]
+  if (stickTo && first.entry.name !== stickTo) {
+    const held = ranked.find((x) => x.entry.name === stickTo)
+    if (held && held.d <= first.d + stickMargin) first = held
+  }
+  const second = ranked.find((x) => x !== first)
   const best = first.entry
   const family = best.family
 
   // The closest name from a *different* family, when it's nearly as good.
   // This is the honest answer for colors that sit on a boundary.
-  const rival = rankNames(lab, 12).find((x) => x.entry.family !== family)
+  const rival = ranked.find((x) => x.entry.family !== family)
   const alsoCalled = rival && rival.d < first.d * 1.18 + 0.008 ? rival.entry.name : null
 
   const confusion = confusionFor({ r, g, b }, family, profile, severity)
