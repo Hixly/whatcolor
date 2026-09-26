@@ -147,7 +147,7 @@ export default function ImageUploadView({ onSave, onBack, onColorChange }) {
 
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-black/60 via-black/20 to-transparent">
         <span className="flex items-center gap-2 text-[15px]">
-          <WhatColorMark size={22} ink="#fff" />
+          <WhatColorMark size={24} weight={1.5} />
           <WhatColorWordmark dark />
         </span>
         <div className="flex items-center gap-2">

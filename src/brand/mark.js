@@ -1,13 +1,33 @@
-// The WhatColor mark, defined once and used everywhere: the React logo, the
-// camera reticle, and the favicon / app-icon files (scripts/build-brand.mjs).
+// The WhatColor mark, defined once and used everywhere: the logo, the camera
+// reticle, and the favicon / app-icon files (scripts/build-brand.mjs).
 //
-// A full-spectrum ring, four crosshair ticks, and a hollow center: the circle
-// in the middle is the spot the app reads, so the logo shows how it works.
-// No imports on purpose, so Node can load this file directly.
+// The logo IS the identifier: a thin spectrum ring, four white crosshair
+// ticks, and a white center circle, all with a dark outline so they read on
+// any background. In the app the center circle is exactly the spot that
+// gets read. No imports on purpose, so Node can load this file directly.
 
-export const INK = '#1C1C1E'
+export const OUTLINE = '#111111'
+export const CENTER_OUTLINE = 'rgba(0,0,0,0.7)'
+export const CORE = '#ffffff'
 
-// Brand spectrum, clockwise from about 11 o'clock (matches the original mark).
+// Geometry on a 100x100 canvas.
+export const RING = { outer: 46, inner: 36 }
+export const CENTER_R = 13
+const TICK = [
+  [50, 1.5, 50, 17],
+  [50, 83, 50, 98.5],
+  [1.5, 50, 17, 50],
+  [83, 50, 98.5, 50],
+]
+const TICK_CORE = [
+  [50, 3, 50, 15.5],
+  [50, 84.5, 50, 97],
+  [3, 50, 15.5, 50],
+  [84.5, 50, 97, 50],
+]
+const W = { tick: 4.5, tickCore: 1.6, center: 3.2, centerCore: 1.5 }
+
+// Brand spectrum, clockwise from about 11 o'clock.
 const STOPS = ['#FF3B30', '#FF9500', '#FFD60A', '#30D158', '#00C7BE', '#0A84FF', '#5E5CE6', '#BF5AF2', '#FF2D55', '#FF3B30']
 const START_DEG = -110
 const SEGMENTS = 96
@@ -38,8 +58,8 @@ function arc(cx, cy, r0, r1, a0, a1) {
   return `M${x0} ${y0}A${r1} ${r1} 0 0 1 ${x1} ${y1}L${x2} ${y2}A${r0} ${r0} 0 0 0 ${x3} ${y3}Z`
 }
 
-/** Ring segments on a 100x100 canvas. */
-export function ringSegments({ outer = 40, inner = 29, cx = 50, cy = 50 } = {}) {
+/** Spectrum ring segments on the 100x100 canvas. */
+export function ringSegments({ outer = RING.outer, inner = RING.inner, cx = 50, cy = 50 } = {}) {
   const out = []
   for (let i = 0; i < SEGMENTS; i++) {
     const a0 = ((START_DEG + (i * 360) / SEGMENTS) * Math.PI) / 180
@@ -49,24 +69,40 @@ export function ringSegments({ outer = 40, inner = 29, cx = 50, cy = 50 } = {}) 
   return out
 }
 
-// Ticks cross the ring like the original crosshair.
-export const TICKS = [
-  [50, 4, 50, 25],
-  [50, 75, 50, 96],
-  [4, 50, 25, 50],
-  [75, 50, 96, 50],
-]
-export const TICK_WIDTH = 6.5
-export const CENTER = { r: 9.5, stroke: 5 }
+/**
+ * Everything needed to draw the mark. `weight` thickens the strokes for tiny
+ * renditions (favicons) so the white details survive; 1 everywhere else.
+ */
+export function markParts({ weight = 1, centerR = CENTER_R } = {}) {
+  return {
+    ring: ringSegments(),
+    ticks: { lines: TICK, width: W.tick * weight, color: OUTLINE },
+    tickCores: { lines: TICK_CORE, width: W.tickCore * weight, color: CORE },
+    center: { r: centerR, width: W.center * weight, color: CENTER_OUTLINE },
+    centerCore: { r: centerR, width: W.centerCore * weight, color: CORE },
+  }
+}
 
-/** Standalone SVG markup for the mark (used to generate the static files). */
-export function markSvg({ size = 100, background = null, radius = 22, scale = 1, ink = INK } = {}) {
+/**
+ * Standalone SVG markup (used to generate the static files). `shadow` adds
+ * the same soft drop shadow the live reticle has.
+ */
+export function markSvg({ size = 100, background = null, radius = 22, scale = 1, weight = 1, shadow = false } = {}) {
+  const m = markParts({ weight })
   const inset = (100 - 100 * scale) / 2
+  const lines = ({ lines: ls, width, color }) =>
+    `<g stroke="${color}" stroke-width="${r2(width)}" stroke-linecap="round">` +
+    ls.map(([x1, y1, x2, y2]) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`).join('') +
+    '</g>'
+  const circle = ({ r, width, color }) => `<circle cx="50" cy="50" r="${r}" fill="none" stroke="${color}" stroke-width="${r2(width)}"/>`
   const g = `<g transform="translate(${r2(inset)} ${r2(inset)}) scale(${scale})">` +
-    ringSegments().map((s) => `<path d="${s.d}" fill="${s.fill}"/>`).join('') +
-    TICKS.map(([x1, y1, x2, y2]) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${ink}" stroke-width="${TICK_WIDTH}" stroke-linecap="round"/>`).join('') +
-    `<circle cx="50" cy="50" r="${CENTER.r}" fill="none" stroke="${ink}" stroke-width="${CENTER.stroke}"/>` +
+    m.ring.map((s) => `<path d="${s.d}" fill="${s.fill}"/>`).join('') +
+    lines(m.ticks) + lines(m.tickCores) + circle(m.center) + circle(m.centerCore) +
     '</g>'
   const bg = background ? `<rect width="100" height="100" rx="${radius}" fill="${background}"/>` : ''
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}">${bg}${g}</svg>`
+  const fx = shadow
+    ? '<defs><filter id="wc-ds" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1.2" stdDeviation="2.2" flood-color="#000" flood-opacity="0.35"/></filter></defs>'
+    : ''
+  const body = shadow ? `<g filter="url(#wc-ds)">${g}</g>` : g
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}">${fx}${bg}${body}</svg>`
 }

@@ -1,9 +1,21 @@
 import { useMemo } from 'react'
-import { ringSegments, TICKS, TICK_WIDTH, CENTER, INK } from '../../brand/mark'
+import { markParts } from '../../brand/mark'
 
-/** The WhatColor mark as inline SVG: crisp at any size, no image request. */
-export function WhatColorMark({ size = 48, ink = INK, className = '', title }) {
-  const ring = useMemo(() => ringSegments(), [])
+function Lines({ lines, width, color }) {
+  return (
+    <g stroke={color} strokeWidth={width} strokeLinecap="round">
+      {lines.map(([x1, y1, x2, y2]) => <line key={`${x1}-${y1}-${x2}`} x1={x1} y1={y1} x2={x2} y2={y2} />)}
+    </g>
+  )
+}
+
+/**
+ * The WhatColor mark as inline SVG, identical to the in-app reticle (which is
+ * drawn with this same component). `centerR` lets the reticle size its center
+ * circle to the real sample spot; `weight` thickens strokes at tiny sizes.
+ */
+export function WhatColorMark({ size = 48, weight = 1, centerR, className = '', title }) {
+  const m = useMemo(() => markParts({ weight, centerR }), [weight, centerR])
   // Numbers are pixels; strings (e.g. "3em") go through CSS so it can scale.
   const dims = typeof size === 'number' ? { width: size, height: size } : { style: { width: size, height: size } }
   return (
@@ -15,11 +27,11 @@ export function WhatColorMark({ size = 48, ink = INK, className = '', title }) {
       aria-label={title}
       aria-hidden={title ? undefined : true}
     >
-      {ring.map((s, i) => <path key={i} d={s.d} fill={s.fill} />)}
-      {TICKS.map(([x1, y1, x2, y2]) => (
-        <line key={`${x1}-${y1}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke={ink} strokeWidth={TICK_WIDTH} strokeLinecap="round" />
-      ))}
-      <circle cx="50" cy="50" r={CENTER.r} fill="none" stroke={ink} strokeWidth={CENTER.stroke} />
+      {m.ring.map((s, i) => <path key={i} d={s.d} fill={s.fill} />)}
+      <Lines {...m.ticks} />
+      <Lines {...m.tickCores} />
+      <circle cx="50" cy="50" r={m.center.r} fill="none" stroke={m.center.color} strokeWidth={m.center.width} />
+      <circle cx="50" cy="50" r={m.centerCore.r} fill="none" stroke={m.centerCore.color} strokeWidth={m.centerCore.width} />
     </svg>
   )
 }
@@ -51,7 +63,7 @@ export function WhatColorLockup({ className = '', style }) {
       role="img"
       aria-label="WhatColor. See more. Know more."
     >
-      <WhatColorMark size="2.9em" />
+      <WhatColorMark size="2.9em" className="drop-shadow-[0_2px_6px_rgba(0,0,0,0.3)]" />
       <WhatColorWordmark className="mt-[0.28em]" />
       <span className="mt-[0.42em] text-[0.2em] font-medium tracking-[0.42em] text-[#6b6b70] pl-[0.42em] whitespace-nowrap">
         SEE MORE. KNOW MORE.

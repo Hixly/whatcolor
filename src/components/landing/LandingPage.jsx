@@ -81,7 +81,7 @@ export default function LandingPage() {
         <footer className="border-t border-gray-100 px-6 py-10 bg-white/80 backdrop-blur-sm">
           <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-5">
             <div className="flex items-center gap-3">
-              <WhatColorMark size={28} />
+              <WhatColorMark size={30} weight={1.4} className="drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]" />
               <span className="text-sm font-semibold text-gray-900">WhatColor</span>
               <span className="text-sm text-gray-400 font-light">See more. Know more.</span>
             </div>
