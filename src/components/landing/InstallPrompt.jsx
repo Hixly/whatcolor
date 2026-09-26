@@ -64,7 +64,7 @@ export default function InstallPrompt() {
     <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-3 pb-3 pointer-events-none">
       <div className="pointer-events-auto w-full max-w-md flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/90 backdrop-blur-xl border border-black/[0.07] raised-light animate-fade-up">
         <div className="w-11 h-11 rounded-xl shrink-0 bg-gray-50 border border-black/5 flex items-center justify-center overflow-hidden">
-          <img src="/icon-192.png" alt="" className="w-full h-full object-cover" />
+          <img src="/icon-192.png?v=2" alt="" className="w-full h-full object-cover" />
         </div>
 
         <div className="flex-1 min-w-0">

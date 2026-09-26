@@ -2,6 +2,7 @@ import { useRef, useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { CameraIcon, UploadIcon } from '../ui/Icons'
 import ColorCyclePill from './ColorCyclePill'
+import { WhatColorLockup } from '../brand/Logo'
 
 const LINE1_WORDS = ['Identify', 'any']
 const COLOR_WORD  = 'color'
@@ -93,13 +94,7 @@ export default function Hero() {
             opacity: 0.35,
           }}
         />
-        <img
-          src="/logo-lockup-transparent.png"
-          srcSet="/logo-lockup-transparent.png 1x, /logo-lockup-transparent@2x.png 2x"
-          alt="WhatColor. See more. Know more."
-          className="relative w-[46rem] md:w-[42rem] h-auto select-none"
-          draggable={false}
-        />
+        <WhatColorLockup className="relative" style={{ fontSize: 'clamp(52px, 6.4vw, 92px)' }} />
       </div>
 
       {/* Headline: scroll-in wave via h1 key, per-letter hover/swipe via WaveLetter */}

@@ -1,11 +1,11 @@
 // WhatColor service worker: app-shell offline support.
 // Bump CACHE_VERSION to invalidate old caches on deploy.
-const CACHE_VERSION = 'wc-v2'
+const CACHE_VERSION = 'wc-v3'
 const PRECACHE = [
   '/',
   '/manifest.webmanifest',
-  '/icon-192.png',
-  '/icon-512.png',
+  '/icon-192.png?v=2',
+  '/icon-512.png?v=2',
   '/favicon.svg',
 ]
 

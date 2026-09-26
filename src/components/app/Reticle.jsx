@@ -1,28 +1,11 @@
 import { forwardRef, useMemo } from 'react'
+import { ringSegments } from '../../brand/mark'
 
-// The WhatColor reticle: the brand's rainbow ring, with a hollow center whose
-// circle is exactly the area being sampled. The old PNG had a solid dot right
-// over the spot it was measuring.
-const SEGMENTS = 36
-
-function arc(cx, cy, r0, r1, a0, a1) {
-  const p = (r, a) => [cx + r * Math.cos(a), cy + r * Math.sin(a)]
-  const [x0, y0] = p(r1, a0), [x1, y1] = p(r1, a1)
-  const [x2, y2] = p(r0, a1), [x3, y3] = p(r0, a0)
-  return `M${x0} ${y0}A${r1} ${r1} 0 0 1 ${x1} ${y1}L${x2} ${y2}A${r0} ${r0} 0 0 0 ${x3} ${y3}Z`
-}
+// The WhatColor reticle: the logo's spectrum ring with a hollow center whose
+// circle is exactly the area being sampled (the logo's center ring, live).
 
 const Reticle = forwardRef(function Reticle({ size = 92, spot = 36, color = null, pulseKey = 0, breathe = false, ringOpacity = 1 }, ref) {
-  const ring = useMemo(() => {
-    const out = []
-    for (let i = 0; i < SEGMENTS; i++) {
-      // Start at the top and go clockwise, red → orange → ... → magenta.
-      const a0 = -Math.PI / 2 + (i / SEGMENTS) * Math.PI * 2
-      const a1 = a0 + (Math.PI * 2) / SEGMENTS + 0.012
-      out.push({ d: arc(50, 50, 36, 46, a0, a1), fill: `hsl(${(i * 360) / SEGMENTS}, 92%, 56%)` })
-    }
-    return out
-  }, [])
+  const ring = useMemo(() => ringSegments({ outer: 46, inner: 36 }), [])
 
   // Keep the sample circle comfortably inside the ring.
   const outer = Math.max(size, spot * 1.9)

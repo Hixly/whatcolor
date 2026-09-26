@@ -2,6 +2,7 @@ import { useInView } from '../../hooks/useInView'
 import { UploadIcon, CompareIcon, EyeIcon, LockIcon, HistoryIcon, DownloadIcon, SunIcon, SpeakerIcon } from '../ui/Icons'
 import { simulateRgb, CVD_SHORT } from '../../engine/cvd'
 import { toHex } from '../../engine/colorMath'
+import { WhatColorMark } from '../brand/Logo'
 
 // One maroon, as four kinds of eyes see it (computed, not hand-picked).
 const MAROON = { r: 110, g: 26, b: 42 }
@@ -50,16 +51,7 @@ export default function Features() {
         <Tile inView={inView} delay={0} className="col-span-2 md:row-span-2 border border-white/10 overflow-hidden relative flex flex-col justify-end p-6 min-h-[300px] md:min-h-0">
           <div className="absolute inset-0" style={{ background: 'radial-gradient(120% 80% at 50% 18%, #f0a35f 0%, #d8552f 38%, #4a1f12 82%, #1a0c07 100%)' }} />
           <div className="absolute inset-x-0 top-0 h-1/2 flex items-center justify-center">
-            <svg viewBox="0 0 100 100" className="w-20 h-20 drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]" aria-hidden="true">
-              <circle cx="50" cy="50" r="41" fill="none" stroke="url(#ft-ring)" strokeWidth="10" />
-              <defs>
-                <linearGradient id="ft-ring" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#FF3B30" /><stop offset="0.35" stopColor="#FFD60A" />
-                  <stop offset="0.65" stopColor="#30D158" /><stop offset="1" stopColor="#BF5AF2" />
-                </linearGradient>
-              </defs>
-              <circle cx="50" cy="50" r="12" fill="none" stroke="#fff" strokeWidth="2" />
-            </svg>
+            <WhatColorMark size={84} ink="#fff" className="drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]" />
           </div>
           <div className="relative">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 backdrop-blur text-white text-[10px] font-semibold mb-3">
@@ -132,7 +124,7 @@ export default function Features() {
 
         {/* Install */}
         <Tile inView={inView} delay={480} className="col-span-2 glass-light p-5 flex items-center gap-4 group">
-          <img src="/icon-192.png" alt="" className="w-12 h-12 rounded-2xl border border-black/5 shrink-0 transition-transform duration-300 group-hover:scale-105" draggable={false} />
+          <img src="/icon-192.png?v=2" alt="" className="w-12 h-12 rounded-2xl border border-black/5 shrink-0 transition-transform duration-300 group-hover:scale-105" draggable={false} />
           <div>
             <h3 className="text-sm font-bold text-gray-900">Install it like an app</h3>
             <p className="text-xs text-gray-500 font-light mt-0.5 leading-relaxed">Add WhatColor to your home screen. It opens instantly, even with no signal.</p>

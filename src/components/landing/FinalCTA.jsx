@@ -18,7 +18,7 @@ export default function FinalCTA() {
 
         <div className="relative">
           <div className="flex justify-center mb-6">
-            <img src="/icon-192.png" alt="" className="w-14 h-14 rounded-2xl border border-white/10" draggable={false} />
+            <img src="/icon-192.png?v=2" alt="" className="w-14 h-14 rounded-2xl border border-white/10" draggable={false} />
           </div>
           <h2 className="text-white text-3xl md:text-5xl font-bold tracking-tight leading-[1.1]">
             See color clearly.

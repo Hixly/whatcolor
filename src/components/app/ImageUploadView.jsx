@@ -5,6 +5,7 @@ import { identify } from '../../engine/identify'
 import { createSampler, SPOT_SIZES } from '../../engine/sampler'
 import ColorInfoPanel from './ColorInfoPanel'
 import Reticle from './Reticle'
+import { WhatColorMark, WhatColorWordmark } from '../brand/Logo'
 import { ImageIcon, RefreshIcon, CameraIcon, ArrowLeftIcon, ChevronDownIcon } from '../ui/Icons'
 
 // Photos are sampled a bit tighter than the live camera: no sensor noise to
@@ -145,7 +146,10 @@ export default function ImageUploadView({ onSave, onBack, onColorChange }) {
       )}
 
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-black/60 via-black/20 to-transparent">
-        <span className="font-bold text-white text-sm tracking-tight"><span className="font-normal">What</span>Color</span>
+        <span className="flex items-center gap-2 text-[15px]">
+          <WhatColorMark size={22} ink="#fff" />
+          <WhatColorWordmark dark />
+        </span>
         <div className="flex items-center gap-2">
           <button
             onClick={() => { setImageSrc(null); setRaw(null); setAim(null) }}

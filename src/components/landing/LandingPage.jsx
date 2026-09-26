@@ -9,6 +9,7 @@ import FinalCTA from './FinalCTA'
 import LandingNav from './LandingNav'
 import InstallPrompt from './InstallPrompt'
 import { SOCIALS } from '../../socials'
+import { WhatColorMark } from '../brand/Logo'
 
 // Soft, vibrant color washes that slowly drift behind the page. Blur and opacity
 // are static (only the transform animates), so they always render as a soft
@@ -80,7 +81,7 @@ export default function LandingPage() {
         <footer className="border-t border-gray-100 px-6 py-10 bg-white/80 backdrop-blur-sm">
           <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-5">
             <div className="flex items-center gap-3">
-              <img src="/logo-symbol-transparent.png" alt="" className="h-7 w-7 object-contain" />
+              <WhatColorMark size={28} />
               <span className="text-sm font-semibold text-gray-900">WhatColor</span>
               <span className="text-sm text-gray-400 font-light">See more. Know more.</span>
             </div>
